@@ -44,7 +44,6 @@ class App extends React.Component {
 
     this.gameManager = new GameManager(this.width, this.height);
     this.gameManager.sceneManager.render();
-    console.log(this.gameManager.sceneManager.scene);
   }
 
 

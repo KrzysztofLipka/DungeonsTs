@@ -3,7 +3,11 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { SkeletonUtils } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { SceneManager } from './SceneManager';
 import { globals } from './utils';
-import { GameObjectManager, Player } from './GameObject'
+import { GameObjectManager, Player, Animal } from './GameObject';
+import { InputManager } from './InputManager';
+//const TWEEN = require('@tweenjs/tween.js');
+import TWEEN from '@tweenjs/tween.js';
+
 
 
 
@@ -37,7 +41,7 @@ export class AssetsManager {
     sceneManager: SceneManager;
     gameObjectManager: GameObjectManager
 
-    constructor(scene: THREE.Scene, sceneManager: SceneManager, gameObjectManager: GameObjectManager) {
+    constructor(scene: THREE.Scene, sceneManager: SceneManager, gameObjectManager: GameObjectManager, inputManager: InputManager) {
         this.manager = new THREE.LoadingManager();
         this.manager.onLoad = this.init;
         this.gltfLoader = new GLTFLoader(this.manager);
@@ -50,19 +54,15 @@ export class AssetsManager {
 
     private addModels = () => {
         this.models.push(
-            this.addGameModel('Pig', 'https://threejsfundamentals.org/threejs/resources/models/animals/Pig.gltf'),
             this.addGameModel('Cow', 'https://threejsfundamentals.org/threejs/resources/models/animals/Cow.gltf'),
+            this.addGameModel('Pig', 'https://threejsfundamentals.org/threejs/resources/models/animals/Pig.gltf'),
             this.addGameModel('Knight', 'https://threejsfundamentals.org/threejs/resources/models/knight/KnightCharacter.gltf')
         )
     }
 
     private loadModels = () => {
         this.models.forEach(model => {
-            console.log('xfd');
-
             this.gltfLoader.load(model.url, (gltf) => { model.gltf = gltf })
-
-
         });
     }
 
@@ -76,8 +76,6 @@ export class AssetsManager {
     }
 
     private loadAnimations = () => {
-
-
         this.models.forEach(model => {
             if (model?.gltf?.animations) {
                 const animsByName = new Map();
@@ -92,8 +90,6 @@ export class AssetsManager {
 
         })
 
-        console.log(this.models);
-
         this.models.forEach(model => {
             if (model?.gltf?.animations) {
                 const m = model.gltf.scene;
@@ -101,12 +97,8 @@ export class AssetsManager {
                 //const cloned = model.gltf.scene.clone()
                 //const root = new THREE.Object3D();
                 //root.add(cloned);
-                this.scene.add(m);
+                //this.scene.add(m);
                 //root.position.x = (8 - 3) * 3;
-
-
-                console.log('animations');
-                console.log(model.animations.get("Idle"));
                 if (model.animations) {
                     const mixer = new THREE.AnimationMixer(model.gltf.scene);
                     const actions: THREE.AnimationAction[] = [];
@@ -132,15 +124,12 @@ export class AssetsManager {
 
     playNextAction = (mixerInfo) => {
         const { actions, actionNdx } = mixerInfo;
-        console.log(actions);
-        console.log(actionNdx);
         const nextActionNdx = (actionNdx + 1) % actions.length;
         mixerInfo.actionNdx = nextActionNdx;
         actions.forEach((action, ndx) => {
             const enabled = ndx === nextActionNdx;
             action.enabled = enabled;
             if (enabled) {
-                console.log(action);
                 action.play();
             }
         });
@@ -159,14 +148,32 @@ export class AssetsManager {
 
         this.then = globals.time;
         //@todo replace
-        this.mixerInfos.forEach(mixer => {
-            mixer.mixer.update(globals.deltaTime);
-        });
+        //this.mixerInfos.forEach(mixer => {
+        //    mixer.mixer.update(globals.deltaTime);
+        //});
 
         this.gameObjectManager.update();
 
+        if (globals.isMouseDown) {
+            globals.leftButtonHoldTime += 1;
+        }
+
+        if (globals.leftButtonHoldTime > 1 && globals.leftButtonHoldTime <= 20) {
+            //console.log('mouseclickevent');
+            globals.isMouseClicked = true;
+        } if (globals.leftButtonHoldTime > 20) {
+            //console.log('mouseholdEvent');
+            //this.sceneManager.calculate2(globals.holdedMouseClientX, globals.holdedMouseClientY)
+            globals.isMouseClicked = false;
+            globals.isMouseHold = true;
+        }
+
+        if (globals.cameraPositionNeedsUpdate) {
+            //this.sceneManager.camera.translateOnAxis();
+        }
+
         this.sceneManager.render();
-        requestAnimationFrame(this.render)
+        requestAnimationFrame(this.render);
     }
 
 
@@ -175,12 +182,11 @@ export class AssetsManager {
         return { name: name, url: url, gltf: null, animations: new Map<any, any>() }
     }
 
-    public getGameModel = (name: string) => {
-        return this.models.some(model => model.name = name);
+    public getGameModel = (name: string): IGameModel => {
+        return this.models.find(model => model.name === name)
     }
 
     public init = () => {
-        console.log('init');
         this.loadAnimations();
         requestAnimationFrame(this.render);
         //////////////////
@@ -189,13 +195,32 @@ export class AssetsManager {
             if (!mixerInfo) {
                 return;
             }
-            this.playNextAction(mixerInfo);
+            //this.playNextAction(mixerInfo);
         });
+
+
+
+        //window.addEventListener('click', (e) => {
+        //    this.sceneManager.calculate(e);
+        //    globals.playerRotationNeedsUpdate = true;
+        //})
         ///////////
+        {
+            const gameObject = this.gameObjectManager.createGameObject(this.scene, 'player');
+            gameObject.addComponent(Player, this.getGameModel('Knight'));
+        }
 
-        //const gameObject = this.gameObjectManager.createGameObject(this.scene, 'player');
-        //gameObject.addComponent(Player);
+        const npcModelNames = [
+            'Cow',
+            'Pig'
+        ]
 
+        npcModelNames.forEach((name, ndx) => {
+            const gameObject = this.gameObjectManager.createGameObject(this.scene, name);
+            gameObject.addComponent(Animal, this.getGameModel(name));
+            gameObject.transform.position.x = (ndx + 1) * 5;
+
+        })
 
     }
 
