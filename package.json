@@ -16,7 +16,8 @@
     "react-scripts": "3.4.0",
     "three": "^0.114.0",
     "three-gltf-loader": "^1.111.0",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "uuid": "^7.0.3"
   },
   "scripts": {
     "start": "react-scripts start",

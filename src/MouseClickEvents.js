@@ -10,11 +10,11 @@ export const calculatePositionFromClick = (clientX, clientY, mouse, raycaster, c
 
     raycaster.setFromCamera(mouse, camera);
     let intersects = raycaster.intersectObjects(scene.children);
+    console.log(intersects);
     if (!!intersects && intersects.length !== 0) {
-        let faceIndex = intersects[0].faceIndex;
-
-
-        let obj = intersects[0].object;
+        let faceIndex = intersects[/*intersects.length - 1*/0].faceIndex;
+        //console.log(intersects[intersects.length - 1].object);
+        let obj = intersects[/*intersects.length - 1*/0].object;
         var geom = obj.geometry;
         var faces = obj.geometry.faces;
         var facesIndices = ["a", "b", "c"];
@@ -46,9 +46,9 @@ export const calculatePositionFromClick = (clientX, clientY, mouse, raycaster, c
         geom.verticesNeedUpdate = true;
 
         var target = new THREE.Vector3(x_sum / 2, 0, z_sum / 2);
-        var cameratarget = new THREE.Vector3(target.x - 30, 80, target.z - 30);
+        var cameratarget = new THREE.Vector3(target.x - 40, 80, target.z - 40);
 
-        return [target, cameratarget];
+        return { targets: [target, cameratarget], objects: intersects };
     }
 
 

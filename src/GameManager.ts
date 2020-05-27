@@ -20,7 +20,6 @@ export class GameManager {
         this.assetsManager = new AssetsManager(this.sceneManager.scene, this.sceneManager, this.gameObjectsManager, this.inputManager);
         this.inputManager = new InputManager(this.sceneManager, this.assetsManager);
         //this.assetsManager.init();
-
     }
 
 }

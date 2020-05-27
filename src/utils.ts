@@ -1,5 +1,6 @@
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import * as THREE from 'three';
+import { GameObject } from './GameObject';
 const TWEEN = require('@tweenjs/tween.js');
 
 export const cloneGltf = (gltf): GLTF => {
@@ -81,6 +82,9 @@ export class SafeArray {
     remove(element) {
         this.removeQueue.add(element);
     }
+    get(name: string) {
+        return this.array.find(element => element.name = name);
+    }
     forEach(fn) {
         this._addQueued();
         this._removeQueued();
@@ -120,6 +124,11 @@ class Globals {
     positionOfLastClick: THREE.Vector3;
     playerRotationNeedsUpdate: boolean = false;
     moveSpeed: number = 16;
+    //player tween initalization
+    tweenNeedsInit: boolean = false;
+
+
+
 
     isMouseDown: boolean = false;
     leftButtonHoldTime: number = 0;
@@ -132,6 +141,18 @@ class Globals {
     holdedMouseClientY = 0;
 
     cameraPositionNeedsUpdate: boolean = false;
+    player: GameObject
+    playerRadius: number = 4;
+
+    playerHitNeedsCalculate = false;
+
+    playerNeedsToHit = false;
+
+    playerIsIdle: boolean = true;
+
+    //playerComboLevel: number = 0;
+    attackTime: number = 0;
+    lastAtackDirectionWasLeft: boolean = true;
 
     //playerPositionNeedsUpdate: boolean = false;
     /**
@@ -144,6 +165,10 @@ class Globals {
     setPositonOfLastClickVector = (vector: THREE.Vector3) => {
         this.positionOfLastClick.set(vector.x, vector.y, vector.z);
     }
+
+    sounds: THREE.Audio[] = [];
+
+
 
 }
 
@@ -181,10 +206,11 @@ export interface IState {
     stateName: string;
     enter: () => void;
     update: () => void;
+    exit?: () => void;
 }
 
 
-export class FiniteStateMachine {
+/*export class FiniteStateMachine {
     states: IState[];
     currentState: IState;
     currentStateName: string;
@@ -193,6 +219,39 @@ export class FiniteStateMachine {
         this.states = states;
         this.transition(initialState);
         this.currentStateName = initialState.stateName;
+    } 
+    get state() {
+        return this.currentState;
+    }
+    transition(state: IState) {
+        const oldState = this.getState(this.currentStateName);
+        if (oldState && oldState.exit) {
+            oldState.exit.call(this);
+        }
+        this.currentState = state;
+        const newState = this.getState(state.stateName);
+        if (newState.enter) {
+            newState.enter.call(this);
+        }
+    }
+    update() {
+        const state = this.getState(this.currentStateName);
+        if (state.update) {
+            state.update.call(this);
+        }
+    }
+
+    getState(name: string) {
+        return this.states.find(state => state.stateName === name)
+    }
+}*/
+
+export class FiniteStateMachine {
+    states: any[];
+    currentState: any;
+    constructor(states, initialState) {
+        this.states = states;
+        this.transition(initialState);
     }
     get state() {
         return this.currentState;
@@ -214,14 +273,56 @@ export class FiniteStateMachine {
             state.update.call(this);
         }
     }
-
-    getState(name: string) {
-        return this.states.find(state => state.stateName === name)
-    }
 }
+
+
+
 
 export function isClose(obj1, obj1Radius, obj2, obj2Radius) {
     const minDist = obj1Radius + obj2Radius;
     const dist = obj1.position.distanceTo(obj2.position);
     return dist < minDist;
 }
+
+// keeps v between -min and +min
+function minMagnitude(v, min) {
+    return Math.abs(v) > min
+        ? min * Math.sign(v)
+        : v;
+}
+
+export const aimTowardAndGetDistance = function () {
+    const delta = new THREE.Vector3();
+
+    return function aimTowardAndGetDistance(source, targetPos, maxTurn) {
+        delta.subVectors(targetPos, source.position);
+        // compute the direction we want to be facing
+        const targetRot = Math.atan2(delta.x, delta.z) + Math.PI * 1.5;
+        // rotate in the shortest direction
+        const deltaRot = (targetRot - source.rotation.y + Math.PI * 1.5) % (Math.PI * 2) - Math.PI;
+        // make sure we don't turn faster than maxTurn
+        const deltaRotation = minMagnitude(deltaRot, maxTurn);
+        // keep rotation between 0 and Math.PI * 2
+        source.rotation.y = THREE.MathUtils.euclideanModulo(
+            source.rotation.y + deltaRotation, Math.PI * 2);
+        // return the distance to the target
+        return delta.length();
+    };
+}();
+
+
+
+
+function makeTextTexture(str) {
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.canvas.width = 64;
+    ctx.canvas.height = 64;
+    ctx.font = '60px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#FFF';
+    ctx.fillText(str, ctx.canvas.width / 2, ctx.canvas.height / 2);
+    return new THREE.CanvasTexture(ctx.canvas);
+}
+
+export const noteTexture = makeTextTexture('♪');
