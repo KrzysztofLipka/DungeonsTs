@@ -1,7 +1,6 @@
-import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
+import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import * as THREE from 'three';
 import { GameObject } from './GameObject';
-const TWEEN = require('@tweenjs/tween.js');
 
 export const cloneGltf = (gltf): GLTF => {
     const clone = {
@@ -111,24 +110,17 @@ export class SafeArray {
 }
 
 
-
-/*export const globals = {
-    time: 0,
-    deltaTime: 0,
-    positionOfLastClick: 0
-};*/
-
 class Globals {
+
+    constructor() {
+        this.positionOfLastClick = new THREE.Vector3();
+    }
+
     time: number = 0;
     deltaTime: number = 0;
     positionOfLastClick: THREE.Vector3;
     playerRotationNeedsUpdate: boolean = false;
     moveSpeed: number = 16;
-    //player tween initalization
-    tweenNeedsInit: boolean = false;
-
-
-
 
     isMouseDown: boolean = false;
     leftButtonHoldTime: number = 0;
@@ -136,9 +128,6 @@ class Globals {
 
     isMouseClicked: boolean = false;
     isMouseHold: boolean = false;
-
-    holdedMouseClientX = 0;
-    holdedMouseClientY = 0;
 
     cameraPositionNeedsUpdate: boolean = false;
     player: GameObject
@@ -154,13 +143,6 @@ class Globals {
     attackTime: number = 0;
     lastAtackDirectionWasLeft: boolean = true;
 
-    //playerPositionNeedsUpdate: boolean = false;
-    /**
-     *
-     */
-    constructor() {
-        this.positionOfLastClick = new THREE.Vector3();
-    }
 
     setPositonOfLastClickVector = (vector: THREE.Vector3) => {
         this.positionOfLastClick.set(vector.x, vector.y, vector.z);

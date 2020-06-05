@@ -1,13 +1,10 @@
 import * as THREE from 'three';
-import { removeArrayElement, SafeArray, FiniteStateMachine, IState, isClose, aimTowardAndGetDistance } from './utils';
+import { removeArrayElement, SafeArray, FiniteStateMachine, isClose } from './utils';
 import { SkeletonUtils } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { IGameModel } from './AssetsManager';
 import { globals } from './utils'
-import { Vector3, SkinnedMesh } from 'three';
+import { Vector3 } from 'three';
 import TWEEN from '@tweenjs/tween.js';
-import { fstat } from 'fs';
-import { v1 as uuid } from 'uuid';
-
 
 export class GameObject {
     name: string;
@@ -18,8 +15,6 @@ export class GameObject {
         this.name = name;
         this.components = [];
         this.transform = new THREE.Object3D();
-        //this.id = uuid();
-        //this.transform.uuid = this.id;
         if (name === 'player') {
             this.transform.name = 'player';
         }
@@ -30,7 +25,6 @@ export class GameObject {
 
         parent.add(this.transform);
         //todo
-
     }
     addComponent(ComponentType, ...args) {
         const component = new ComponentType(this, ...args);
@@ -51,14 +45,6 @@ export class GameObject {
         }
     }
 }
-
-class Factory {
-    create<T>(type: (new () => T)): T {
-        return new type();
-    }
-}
-const factory = new Factory();
-
 
 export class Component {
     gameObject: GameObject
@@ -90,9 +76,6 @@ export class GameObjectManager {
     }
     update() {
         this.gameObjects.forEach(gameObject => gameObject.update());
-        //if(globals.playerHitNeedsCalculate){
-        //    this.gameObjects.forEach(gameObjects=>)
-        //}
         globals.playerHitNeedsCalculate = false;
         TWEEN.update();
     }
@@ -169,24 +152,6 @@ class SkinInstance extends Component {
             }
             act.play();
 
-
-
-
-            //for (const action of Object.values(this.actions)) {
-            //    action.enabled = false;
-            //}
-            // get or create existing action for clip
-            /*console.log(clip);
-            if (clip) {
-                const action = this.mixer.clipAction(clip);
-
-
-                action.enabled = true;
-                action.reset();
-                action.play();
-                console.log(action.name);
-                this.actions.set(animName, action);
-            }*/
         }
     }
     update() {
@@ -194,53 +159,44 @@ class SkinInstance extends Component {
     }
 }
 
-//const kForward = new THREE.Vector3(0, 0, 1);
-
 export class Player extends Component {
     skinInstance: SkinInstance;
     currentPosition: Vector3;
     attack: any;
     fsm: FiniteStateMachine;
     kForward = new THREE.Vector3(0, 0, 1);
-    //tweenNeedsInit: boolean = false;
 
     constructor(gameObject: GameObject, importedModel: IGameModel) {
         super(gameObject);
         const model = importedModel;
         this.skinInstance = gameObject.addComponent(SkinInstance, model);
-        //let attackTime = 0;
 
-        //this.skinInstance.setAnimation('Run');
         this.currentPosition = this.skinInstance.gameObject.transform.position;
-        //console.log(this.skinInstance);
-
         this.attack = () => {
             this.skinInstance.setAnimation('AttackLeft');
         }
 
         this.fsm = new FiniteStateMachine({
-            run: {
+            idle: {
                 enter: () => { this.skinInstance.setAnimation('Idle'); /*globals.player.transform.lookAt(globals.positionOfLastClick);*/ },
                 update: () => {
                     if (!globals.playerIsIdle) {
 
-                        this.fsm.transition('idle');
+                        this.fsm.transition('run');
                     }
                 }
             },
 
-            idle: {
+            run: {
                 enter: () => { this.skinInstance.setAnimation('Run'); globals.sounds[0].play(); },
                 update: () => {
 
                     if (globals.playerIsIdle) {
-                        this.fsm.transition('run');
+                        this.fsm.transition('idle');
                         globals.sounds[0].pause();
                     }
 
                     if (globals.playerNeedsToHit && this.skinInstance.gameObject.transform.position.distanceTo(globals.positionOfLastClick) < 5) {
-                        //this.skinInstance.setAnimation('Run_swordRight');
-                        //this.attack();
 
                         this.fsm.transition('attack')
 
@@ -276,33 +232,10 @@ export class Player extends Component {
                         this.fsm.transition('idle')
                     }
 
-                    //if (globals.playerComboLevel === 2) {
-                    //     this.fsm.transition('attack2');
-                    // }
-
-                    //if (globals.attackTime === 200 && globals.playerComboLevel !== 2) { globals.attackTime = 0; globals.playerComboLevel = 0 }
-
-
-
                 }
 
 
             },
-            /*attack2: {
-                enter: () => { this.skinInstance.setAnimation('AttackRight', true); },
-                update: () => {
-                    //tu zostaje czasami
-                    console.log(globals.attackTime);
-
-                    globals.attackTime += 1;
-                    if (globals.attackTime >= 120) {
-                        console.log("attack2222");
-                        globals.playerComboLevel = 0;
-                        globals.attackTime = 0;
-                        this.fsm.transition('idle');
-                    }
-                }
-            }*/
         }, 'idle')
 
 
@@ -314,31 +247,6 @@ export class Player extends Component {
         }
 
         this.fsm.update();
-
-        /*if (globals.isMouseClicked && this.skinInstance.gameObject.transform.position.distanceTo(globals.positionOfLastClick) > 2) {
-            this.skinInstance.gameObject.transform.translateOnAxis(kForward, 16 * globals.deltaTime);
-            globals.cameraPositionNeedsUpdate = true;
-        }
-
-        if (globals.isMouseHold && this.skinInstance.gameObject.transform.position.distanceTo(globals.positionOfLastClick) > 2) {
-            this.skinInstance.gameObject.transform.translateOnAxis(kForward, 16 * globals.deltaTime);
-        }
-
-        if (globals.playerNeedsToHit && this.skinInstance.gameObject.transform.position.distanceTo(globals.positionOfLastClick) < 2) {
-            //this.skinInstance.setAnimation('Run_swordRight');
-            this.attack();
-            console.log('player is attacking');
-            globals.playerNeedsToHit = false;
-            console.log(this.skinInstance);
-           
-
-
-        }*/
-
-        /*if (globals.playerPositionNeedsUpdate) {
-            //globals.positionOfLastClick = this.skinInstance.gameObject.transform.position;
-            //globals.playerPositionNeedsUpdate = false;
-        }*/
 
     }
 
@@ -359,13 +267,9 @@ export class Animal extends Component {
 
     constructor(gameObject: GameObject, model: IGameModel) {
         super(gameObject);
-        //model.gltf.scene.name = 'aa';
         this.numberOfLives = 5;
         this.skinInstance = gameObject.addComponent(SkinInstance, model);
         this.skinInstance.mixer.timeScale = globals.moveSpeed / 4;
-        //this.skinInstance.setAnimation('Idle');
-        //const run = new GoToPlayer(this.skinInstance);
-        //const idle = new Idle(this.skinInstance, this.fsm, run, this.skinInstance.gameObject.transform, 5);
         const playerTransform = globals.player.transform;
         //Todo refractor
         const transform = gameObject.transform;
@@ -393,10 +297,6 @@ export class Animal extends Component {
                     updateOffset += 1;
 
                     if (updateOffset === 1) {
-                        const deltaTurnSpeed = this.maxTurnSpeed * globals.deltaTime;
-                        if (this.skinInstance.gameObject.name === 'Cow') {
-
-                        }
                         transform.lookAt(playerTransform.position);
                         transform.translateOnAxis(this.kForward, 6 * globals.deltaTime);
 
@@ -410,9 +310,6 @@ export class Animal extends Component {
                     }
 
                 }
-
-
-
             },
             attack: {
                 enter: () => {
@@ -431,18 +328,12 @@ export class Animal extends Component {
                     if (this.numberOfLives < 0) {
                         this.fsm.transition('dead');
                     }
-
-
                 }
-
             }, dead: {
                 enter: () => { this.skinInstance.setAnimation('Death', true) },
                 update: () => { }
             }
-
-
         }, 'idle')
-
     }
 
     update() {
@@ -454,89 +345,5 @@ export class Animal extends Component {
             this.numberOfLives -= 1;
             console.log(this.skinInstance.gameObject.name + 'Mob has' + this.numberOfLives + 'lives')
         }
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-}
-
-
-
-
-
-
-
-
-
-/*class Idle implements IState {
-    stateName: string = 'idle';
-    skinInstance: any;
-    fsm: FiniteStateMachine;
-    transitionState: IState;
-    transform: THREE.Object3D;
-    hitRadius: number;
-    playerTransform: THREE.Object3D;
-
-
-    constructor(skinInstance: any, fsm: FiniteStateMachine, transitionState: IState, transform: THREE.Object3D, hitRadius: number) {
-        this.skinInstance = skinInstance;
-        this.fsm = fsm;
-        this.transitionState = transitionState;
-        this.hitRadius = hitRadius;
-        this.transform = transform;
-        this.playerTransform = globals.player.transform;
-    }
-
-
-
-    enter = () => {
-        this.skinInstance.setAnimation('Idle');
-    }
-
-    update = () => {
-        if (isClose(this.transform, this.hitRadius, this.playerTransform, globals.playerRadius)) {
-
-            if (this.fsm) {
-                console.log('ii');
-                this.fsm.transition(this.transitionState);
-            }
-
-        }
-
     }
 }
-
-class GoToPlayer implements IState {
-    stateName = 'goToPlayer';
-    skinInstance: any;
-    //targetPos: any;
-
-    transform: THREE.Object3D;
-
-    constructor(skinInstance: any) {
-        this.skinInstance = skinInstance;
-
-    }
-
-    maxTurnSpeed = Math.PI * (globals.moveSpeed / 4);
-    playerTransform = globals.player.transform.position;
-
-
-    enter = () => {
-        this.skinInstance.setAnimation('Run');
-    }
-
-    update = () => {
-        const deltaTurnSpeed = this.maxTurnSpeed * globals.deltaTime;
-        aimTowardAndGetDistance(this.transform, this.playerTransform, deltaTurnSpeed);
-    }
-}*/

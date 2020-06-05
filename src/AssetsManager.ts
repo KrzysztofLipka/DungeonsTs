@@ -5,20 +5,12 @@ import { SceneManager } from './SceneManager';
 import { globals } from './utils';
 import { GameObjectManager, Player, Animal } from './GameObject';
 import { InputManager } from './InputManager';
-//const TWEEN = require('@tweenjs/tween.js');
-import TWEEN from '@tweenjs/tween.js';
-import { Children } from 'react';
-
-
-
-
 
 export interface IGameModel {
     name: string;
     url: string;
     gltf: GLTF;
     animations: Map<any, any>;
-    indexInGLTF?: number
 }
 
 export interface IGameModelsGroup {
@@ -26,8 +18,6 @@ export interface IGameModelsGroup {
     names: string[];
     url: string;
     gltf: GLTF;
-    //animations: Map<any, any>;
-    //indexInGLTF?: number
 }
 
 export interface IAsset {
@@ -56,7 +46,6 @@ export class AssetsManager {
     assetsGroups: IGameModelsGroup[] = [];
     loadedModels: THREE.Object3D;
     scene: THREE.Scene;
-    //mixers: THREE.AnimationMixer[] = [];
     mixerInfos: IMixerInfo[] = [];
     then: number = 0;
     sceneManager: SceneManager;
@@ -191,21 +180,12 @@ export class AssetsManager {
         if (asset?.gltf?.scene?.children && asset?.gltf?.scene?.children.length > 0) {
             console.log(asset.names)
             asset.names.forEach(nameofobj => {
-                console.log(nameofobj);
-                console.log(nameofobj.trim());
-                console.log(asset.gltf.scene.children[0].name);
                 let assetForClone = asset.gltf.scene.children.find(model => model.name === nameofobj);
-                console.log(assetForClone);
                 if (assetForClone) {
                     let clonedAsset: any = SkeletonUtils.clone(assetForClone);
                     this.objects3d.push({ name: assetForClone.name, model: clonedAsset });
                 }
-
             })
-
-
-            console.log(this.objects3d);
-
         }
 
     }
@@ -254,13 +234,6 @@ export class AssetsManager {
 
         this.models.forEach(model => {
             if (model?.gltf?.animations) {
-                const m = model.gltf.scene;
-                //const clonedScene = SkeletonUtils.clone(model.gltf.scene);
-                //const cloned = model.gltf.scene.clone()
-                //const root = new THREE.Object3D();
-                //root.add(cloned);
-                //this.scene.add(m);
-                //root.position.x = (8 - 3) * 3;
                 if (model.animations) {
                     const mixer = new THREE.AnimationMixer(model.gltf.scene);
                     const actions: THREE.AnimationAction[] = [];
@@ -285,70 +258,14 @@ export class AssetsManager {
 
     }
 
-    playNextAction = (mixerInfo) => {
-        const { actions, actionNdx } = mixerInfo;
-        const nextActionNdx = (actionNdx + 1) % actions.length;
-        mixerInfo.actionNdx = nextActionNdx;
-        actions.forEach((action, ndx) => {
-            const enabled = ndx === nextActionNdx;
-            action.enabled = enabled;
-            if (enabled) {
-                action.play();
-            }
-        });
-    }
-
-
-    private render = (now) => {
-
-        globals.time = now * 0.001;
-        globals.deltaTime = Math.min(globals.time - this.then, 1 / 20);
-
-        this.then = globals.time;
-        this.gameObjectManager.update();
-
-        if (globals.isMouseDown) {
-            globals.leftButtonHoldTime += 1;
-        }
-
-        if (globals.leftButtonHoldTime > 1 && globals.leftButtonHoldTime <= 20) {
-            globals.isMouseClicked = true;
-        } if (globals.leftButtonHoldTime > 20) {
-
-            globals.isMouseClicked = false;
-            globals.isMouseHold = true;
-        }
-
-        if (globals.cameraPositionNeedsUpdate) {
-        }
-
-        this.sceneManager.render();
-        requestAnimationFrame(this.render);
-    }
-
-
 
     private addGameModel = (name: string, url: string): IGameModel => {
         return { name: name, url: url, gltf: null, animations: new Map<any, any>() }
     }
 
-    /*private addGameModelWithMultupleMeshes = (names: string[], url: string): IGameModel[] => {
-        let index: number = 0;
-        let models: IGameModel[];
-        names.forEach(name => {
-            models.push(
-                { name: name, url: url, gltf: null, animations: null, indexInGLTF: index })
-            index += 1;
-        })
-        return models;
-    }*/
-
     private addGameModelWithMultupleMeshes = (name: string, names: string[], url: string): IGameModelsGroup => {
-        console.log(names);
         return { groupName: name, names: names, url: url, gltf: null }
     }
-
-
 
     public getGameModel = (name: string): IGameModel => {
         return this.models.find(model => model.name === name)
@@ -423,58 +340,15 @@ export class AssetsManager {
 
         this.addObject3dToScene('Stonewall2', { posX: 22, posY: 6, posZ: 32 }, Math.PI);
 
-
-        //['Doors', 'StonePillar', 'StoneWall', 'StoneWall2']
-
-        //this.addAsset('Wall', { posX: 68, posY: 2, posZ: 20 }, { scaleX: 5, scaleY: 2, scaleZ: 3 });
-        //this.addAsset('Stone1', { posX: -54, posY: 2, posZ: -44 }, { scaleX: 5, scaleY: 6, scaleZ: 5 });
-        //this.addAsset('Stone2', { posX: -15, posY: 2, posZ: -44 }, { scaleX: 4, scaleY: 3, scaleZ: 4 });
-        //this.addAsset('Stone1', { posX: -4, posY: 2, posZ: -44 }, { scaleX: 5, scaleY: 6, scaleZ: 5 });
-        //this.addAsset('Stone2', { posX: 37, posY: 2, posZ: -44 }, { scaleX: 4, scaleY: 3, scaleZ: 4 });
-        //this.addAsset('Stone1', { posX: 45, posY: 2, posZ: -44 }, { scaleX: 5, scaleY: 6, scaleZ: 5 });
-
         this.addAsset('WallAsset', { posX: 104, posY: -23, posZ: -36 }, { scaleX: 2, scaleY: 4, scaleZ: 4 }, 3 * Math.PI / 2);
 
         this.addAsset('WallAsset', { posX: 104, posY: -23, posZ: 37 }, { scaleX: -2, scaleY: 4, scaleZ: 4 }, 3 * Math.PI / 2);
 
-        requestAnimationFrame(this.render);
-        //////////////////
-        window.addEventListener('keydown', (e) => {
-            const mixerInfo = this.mixerInfos[e.keyCode - 49];
-            if (!mixerInfo) {
-                return;
-            }
-            //this.playNextAction(mixerInfo);
-        });
-
-
-
-        //window.addEventListener('click', (e) => {
-        //    this.sceneManager.calculate(e);
-        //    globals.playerRotationNeedsUpdate = true;
-        //})
-        ///////////
         {
             const gameObject = this.gameObjectManager.createGameObject(this.scene, 'player');
             gameObject.addComponent(Player, this.getGameModel('Knight'));
             globals.player = gameObject;
         }
-
-        const npcModelNames = [
-
-            //'Cow',
-            'Goblin'
-
-        ]
-
-        /*npcModelNames.forEach((name, ndx) => {
-            const gameObject = this.gameObjectManager.createGameObject(this.scene, name);
-            gameObject.addComponent(Animal, this.getGameModel(name));
-
-            //tu lezy problem
-            gameObject.transform.position.x = (ndx + 1) * 20;
-
-        })*/
 
         this.AddGoblin(60, 7);
 

@@ -8,82 +8,30 @@ import TWEEN from '@tweenjs/tween.js';
 
 export class InputManager {
 
-    /**
-     *
-     */
     mouseDownTime: Date = new Date();
     mouseUpTime: Date = new Date();
-
-    //holdedMouseClientX = 0;
-    //holdedMouseClientY = 0;
-
-
-
-
+    sceneManager: SceneManager;
+    public mouse: THREE.Vector2;
 
     constructor(sceneManager: SceneManager, assetsManager: AssetsManager) {
-
-        /*window.addEventListener('mousemove', (e) => {
-            if (globals.isMouseHold) {
-                console.log('targetUpdate');
-                globals.playerRotationNeedsUpdate = true;
-                sceneManager.calculate2(e.clientX, e.clientY);
-
-
-            }
-        })*/
-
-        /*window.addEventListener('click', (e) => {
-            sceneManager.calculate(e);
-            console.log('click');
-            globals.playerRotationNeedsUpdate = true;
-        })*/
+        this.sceneManager = sceneManager;
+        this.mouse = new THREE.Vector2();
 
         window.addEventListener('mousedown', e => {
-            //TWEEN.tween.stop();
-
-
             TWEEN.removeAll();
-            globals.tweenNeedsInit = true;
-            console.log('mousedown');
-            globals.playerIsIdle = false;
-            //this.mouseDownTime = new Date()
-
             globals.isMouseDown = true;
-            let shouldMove = sceneManager.calculate(e);
+            let shouldMove = this.calculate(e);
 
-            //const intersect = sceneManager.raycaster.intersectObjects(sceneManager.scene.children);
-            //console.log(sceneManager.scene.children);
-
-            /*console.log(intersect[0].object);
-            if (intersect.length > 1) {
-                console.log('!!!!!!!!!!!');
-                console.log(intersect[1].object);
-
-            }*/
-
-            //console.log(intersect);
             globals.playerRotationNeedsUpdate = true;
-
-            globals.holdedMouseClientX = e.clientX;
-            globals.holdedMouseClientY = e.clientY;
 
             const cameraTarget = new THREE.Vector3(
                 globals.positionOfLastClick.x - 50,
                 80,
                 globals.positionOfLastClick.z - 50);
 
-            //let tween = new Tween(sceneManager.camera.position).to(cameraTarget, 2000).start();
-            //tween.update();
-
-            //if (globals.playerComboLevel === 1 && globals.attackTime > 50 && globals.attackTime < 150) {
-            //    globals.playerComboLevel = 2;
-            //}
-
             if (shouldMove) {
 
-                //globals.player.transform.lookAt(globals.positionOfLastClick);
-
+                globals.playerIsIdle = false;
                 const distance = sceneManager.camera.position.distanceTo(cameraTarget);
 
                 const playerDistance = globals.player.transform.position.distanceTo(globals.positionOfLastClick);
@@ -96,13 +44,7 @@ export class InputManager {
 
                 tw.onComplete(() => {
                     globals.playerIsIdle = true;
-                    console.log('complete');
-                    if (globals.isMouseHold === true) {
-                        //sceneManager.calculate2(window.screenX, e.screenY);
-                        console.log('mousehold');
-                        //globals.player.transform.lookAt(globals.positionOfLastClick);
-                        //tw.start();
-                    }
+
                 })
                 tw.start();
                 tw2.start();
@@ -110,13 +52,6 @@ export class InputManager {
             } else {
                 globals.player.transform.lookAt(globals.positionOfLastClick);
             }
-
-
-
-
-
-
-
 
         })
 
@@ -127,14 +62,99 @@ export class InputManager {
             globals.isMouseHold = false;
             globals.leftButtonHoldTime = 0;
 
-            //globals.playerPositionNeedsUpdate = true;
-            //console.log(globals.leftButtonHoldTime);
-
-            //this.mouseUpTime = new Date();
-            //let i = this.mouseUpTime.getMilliseconds();
-            //let j = this.mouseDownTime.getMilliseconds();
-            //console.log(i - j);
         })
+    }
+
+    update = () => {
+        if (globals.isMouseDown) {
+            globals.leftButtonHoldTime += 1;
+        }
+
+        if (globals.leftButtonHoldTime > 1 && globals.leftButtonHoldTime <= 20) {
+            globals.isMouseClicked = true;
+            console.log('mouseclick');
+        } if (globals.leftButtonHoldTime > 20) {
+
+            globals.isMouseClicked = false;
+            globals.isMouseHold = true;
+            console.log('mousehold');
+        }
+
+        if (globals.cameraPositionNeedsUpdate) {
+        }
+    }
+
+    public calculate = (e) => {
+        const clickTarget = this.calculatePositionFromClick(
+            e.clientX, e.clientY,
+            this.mouse, this.sceneManager.raycaster,
+            this.sceneManager.camera, this.sceneManager.scene);
+        globals.setPositonOfLastClickVector(clickTarget);
+
+        if (this.calculateIfElementOfSceneInClickArea(clickTarget, 3)) {
+            globals.playerHitNeedsCalculate = true;
+            globals.playerNeedsToHit = true;
+        }
+        //this.cube.translateOnAxis(kForward, distance);
+        return !!clickTarget;
+    }
+
+    calculateIfElementOfSceneInClickArea(clickVector: THREE.Vector3, area: number): boolean {
+        let i: number;
+        for (i = 0; i < this.sceneManager.scene.children.length; i++) {
+            if (this.sceneManager.scene.children[i].name === 'goblin'
+                && this.sceneManager.scene.children[i].position.distanceTo(clickVector) < area) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    calculatePositionFromClick = (clientX, clientY, mouse, raycaster, camera, scene) => {
+        //let mouse: THREE.Vector2 
+        mouse.x = (clientX / window.innerWidth) * 2 - 1;
+        mouse.y = - (clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        let intersects = raycaster.intersectObjects(scene.children);
+        console.log(intersects);
+        if (!!intersects && intersects.length !== 0) {
+            let faceIndex = intersects[0].faceIndex;
+            let obj = intersects[0].object;
+            var geom = obj.geometry;
+            var faces = obj.geometry.faces;
+            var facesIndices = ["a", "b", "c"];
+            var verts = [];
+            var x_values = [];
+            var z_values = [];
+            var x_sum = 0;
+            var z_sum = 0;
+
+            if (faceIndex % 2 === 0) {
+                faceIndex = faceIndex + 1;
+            } else {
+                faceIndex = faceIndex - 1;
+            }
+            facesIndices.forEach(function (indices) {
+                verts.push(geom.vertices[faces[faceIndex][indices]])
+                if (!x_values.includes(geom.vertices[faces[faceIndex][indices]].x)) {
+                    x_values.push(geom.vertices[faces[faceIndex][indices]].x);
+                    x_sum += geom.vertices[faces[faceIndex][indices]].x;
+
+                }
+
+                if (!z_values.includes(geom.vertices[faces[faceIndex][indices]].z)) {
+                    z_values.push(geom.vertices[faces[faceIndex][indices]].z);
+                    z_sum += geom.vertices[faces[faceIndex][indices]].z;
+                }
+
+            });
+            geom.verticesNeedUpdate = true;
+
+            var target = new THREE.Vector3(x_sum / 2, 0, z_sum / 2);
+            return target;
+        }
     }
 
 

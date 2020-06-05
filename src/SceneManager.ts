@@ -1,8 +1,4 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { Raycaster, CubeCamera, SkinnedMesh } from 'three';
-import { calculatePositionFromClick } from './MouseClickEvents';
-import { globals } from './utils'
 import { IGameModel } from './AssetsManager'
 
 export class SceneManager {
@@ -12,7 +8,7 @@ export class SceneManager {
 
     public mount: HTMLDivElement;
     public raycaster: THREE.Raycaster;
-    public mouse: THREE.Vector2;
+    //public mouse: THREE.Vector2;
     public cube: THREE.Mesh;
     public assets: IGameModel[];
 
@@ -33,7 +29,7 @@ export class SceneManager {
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.raycaster = new THREE.Raycaster();
 
-        this.mouse = new THREE.Vector2();
+        // this.mouse = new THREE.Vector2();
 
 
         const col = 0x9ba9b0
@@ -73,7 +69,6 @@ export class SceneManager {
 
         var geometry = new THREE.PlaneGeometry(100, 60, 50, 50);
         geometry.rotateX(-1.56);
-        var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
         var plain = new THREE.Mesh(geometry, material2);
         this.scene.add(plain);
 
@@ -104,96 +99,6 @@ export class SceneManager {
         document.body.appendChild(this.renderer.domElement)
 
     }
-
-    calculateIfElementOfSceneInClickArea(clickVector: THREE.Vector3, area: number): boolean {
-        let i: number;
-        for (i = 0; i < this.scene.children.length; i++) {
-            if (this.scene.children[i].name === 'goblin' && this.scene.children[i].position.distanceTo(clickVector) < area) {
-                return true;
-            }
-        }
-
-        return false;
-
-    }
-
-    public calculate = (e) => {
-        const clickTargets = calculatePositionFromClick(e.clientX, e.clientY, this.mouse, this.raycaster, this.camera, this.scene);
-
-        //this.cube.lookAt(rr[0]);
-        //const kForward = new THREE.Vector3(0, 0, 1);
-        //this.cube.position.set(rr[0][0], rr[0][1], rr[0][2])
-        //var distance = this.cube.position.distanceTo(rr[0]);
-        globals.setPositonOfLastClickVector(clickTargets.targets[0]);
-
-        //check
-
-
-        if (/*rr.objects.length > 1 ||*/ this.calculateIfElementOfSceneInClickArea(clickTargets.targets[0], 3)) {
-            globals.playerHitNeedsCalculate = true;
-            globals.playerNeedsToHit = true;
-        }
-
-        clickTargets.objects.forEach(object => {
-            if (object.object instanceof SkinnedMesh) {
-            }
-        })
-
-        //this.cube.translateOnAxis(kForward, distance);
-        return clickTargets.objects.length === 1 || !this.calculateIfElementOfSceneInClickArea(clickTargets.targets[0], 1);
-    }
-
-    public calculate2 = (clientX: number, clientY: number) => {
-        const rr = calculatePositionFromClick(clientX, clientY, this.mouse, this.raycaster, this.camera, this.scene);
-        globals.setPositonOfLastClickVector(rr.targets[0]);
-    }
-
-    /*public calculatePositionFromClick = (e: MouseEvent) => {
-        //let mouse: THREE.Vector2 
-        this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-        this.mouse.y = - (e.clientY / window.innerHeight) * 2 + 1;
-
-        this.raycaster.setFromCamera(this.mouse, this.camera);
-        let intersects = this.raycaster.intersectObjects(this.scene.children);
-        if (!!intersects && intersects.length !== 0) {
-            let faceIndex = intersects[0].faceIndex;
-
-
-            let obj = intersects[0].object;
-            var geom = obj.geometry;
-            var faces = obj.geometry.faces;
-            var facesIndices = ["a", "b", "c"];
-            var verts = [];
-            var x_values = [];
-            var z_values = [];
-            var x_sum = 0;
-            var z_sum = 0;
-
-            if (faceIndex % 2 == 0) {
-                faceIndex = faceIndex + 1;
-            } else {
-                faceIndex = faceIndex - 1;
-            }
-            facesIndices.forEach(function (indices) {
-                verts.push(geom.vertices[faces[faceIndex][indices]])
-                if (!x_values.includes(geom.vertices[faces[faceIndex][indices]].x)) {
-                    x_values.push(geom.vertices[faces[faceIndex][indices]].x);
-                    x_sum += geom.vertices[faces[faceIndex][indices]].x;
-
-                }
-
-                if (!z_values.includes(geom.vertices[faces[faceIndex][indices]].z)) {
-                    z_values.push(geom.vertices[faces[faceIndex][indices]].z);
-                    z_sum += geom.vertices[faces[faceIndex][indices]].z;
-                }
-
-            });
-            geom.verticesNeedUpdate = true;
-        }
-
-
-
-    }*/
 
     public render() {
         this.renderer.render(this.scene, this.camera);

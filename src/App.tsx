@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import * as THREE from 'three';
 import { GameManager } from './GameManager'
@@ -15,29 +14,11 @@ class App extends React.Component {
 
   public el = document.createElement('div');
 
-  /**
-   *
-   */
-  constructor(props: any) {
-    super(props);
-    //this.scene = new THREE.Scene();
-    /*this.camera = new THREE.PerspectiveCamera(
-      75, // fov = field of view
-      this.width / this.height, // aspect ratio
-      0.1, // near plane
-      1000 // far plane
-    );*/
-    //this.renderer = new THREE.WebGLRenderer();
-
-  }
-
-
-
   componentDidMount() {
     this.height = window.innerHeight;
     this.width = window.innerWidth;
     this.sceneSetup();
-    this.gameManager.assetsManager.init()
+    this.gameManager.init()
   }
 
   sceneSetup = () => {
