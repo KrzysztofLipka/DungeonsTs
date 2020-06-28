@@ -3,7 +3,7 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { SkeletonUtils } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { SceneManager } from './SceneManager';
 import { globals } from './utils';
-import { GameObjectManager, Player, Animal } from './GameObject';
+import { GameObjectManager, Player, Enemy } from './GameObject';
 import { InputManager } from './InputManager';
 
 export interface IGameModel {
@@ -273,7 +273,7 @@ export class AssetsManager {
 
     public AddGoblin = (posX: number, posZ: number) => {
         const gameObject = this.gameObjectManager.createGameObject(this.scene, 'Goblin');
-        gameObject.addComponent(Animal, this.getGameModel('Goblin'));
+        gameObject.addComponent(Enemy, this.getGameModel('Goblin'));
 
         //tu lezy problem
         gameObject.transform.position.x = posX;
@@ -351,22 +351,12 @@ export class AssetsManager {
         }
 
         this.AddGoblin(60, 7);
-
         this.AddGoblin(30, 7);
-
         this.AddGoblin(70, 3);
-
-
         this.AddGoblin(120, 3);
-
         this.AddGoblin(160, 3);
         this.AddGoblin(155, -10);
         this.AddGoblin(150, -10);
-
-
-
-
-
     }
 
 

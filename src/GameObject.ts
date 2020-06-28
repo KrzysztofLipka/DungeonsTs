@@ -206,8 +206,6 @@ export class Player extends Component {
                     if (!globals.playerNeedsToHit && this.skinInstance.gameObject.transform.position.distanceTo(globals.positionOfLastClick) >= 5) {
                         globals.playerNeedsToHit = false;
                     }
-
-
                 }
             },
             attack: {
@@ -253,7 +251,7 @@ export class Player extends Component {
 
 }
 
-export class Animal extends Component {
+export class Enemy extends Component {
     followRadius: number = 20;
     hitRadius: number = 1;
     fsm: FiniteStateMachine;
@@ -304,8 +302,6 @@ export class Animal extends Component {
                             this.fsm.transition('attack');
                             updateOffset = 0;
                         }
-
-
                         updateOffset = 0;
                     }
 

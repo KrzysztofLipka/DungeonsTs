@@ -2,6 +2,7 @@ import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import * as THREE from 'three';
 import { GameObject } from './GameObject';
 
+//todo use that instead of ShinnedMesh Clonning
 export const cloneGltf = (gltf): GLTF => {
     const clone = {
         animations: gltf.animations,
@@ -156,77 +157,12 @@ class Globals {
 
 export const globals = new Globals();
 
-
-
-/*export const animateVector3 = (vectorToAnimate: THREE.Vector3, target: THREE.Vector3, options) => {
-    options = options || {};
-    // get targets from options or set to defaults
-    var to = target,
-        easing = options.easing || Easing.Quadratic.In,
-        duration = options.duration || 2000;
-    // create the tween
-    var tweenVector3 = new TWEEN.Tween(vectorToAnimate)
-        .to({ x: to.x, y: to.y, z: to.z, }, duration)
-        .easing(easing)
-        .onUpdate(function (d) {
-            if (options.update) {
-                options.update(d);
-            }
-        })
-        .onComplete(function () {
-            if (options.callback) options.callback();
-        });
-    // start the tween
-    tweenVector3.start();
-    // return the tween in case we want to manipulate it later on
-    return tweenVector3;
-}*/
-
-
-
 export interface IState {
     stateName: string;
     enter: () => void;
     update: () => void;
     exit?: () => void;
 }
-
-
-/*export class FiniteStateMachine {
-    states: IState[];
-    currentState: IState;
-    currentStateName: string;
-
-    constructor(states: IState[], initialState: IState) {
-        this.states = states;
-        this.transition(initialState);
-        this.currentStateName = initialState.stateName;
-    } 
-    get state() {
-        return this.currentState;
-    }
-    transition(state: IState) {
-        const oldState = this.getState(this.currentStateName);
-        if (oldState && oldState.exit) {
-            oldState.exit.call(this);
-        }
-        this.currentState = state;
-        const newState = this.getState(state.stateName);
-        if (newState.enter) {
-            newState.enter.call(this);
-        }
-    }
-    update() {
-        const state = this.getState(this.currentStateName);
-        if (state.update) {
-            state.update.call(this);
-        }
-    }
-
-    getState(name: string) {
-        return this.states.find(state => state.stateName === name)
-    }
-}*/
 
 export class FiniteStateMachine {
     states: any[];
@@ -257,54 +193,8 @@ export class FiniteStateMachine {
     }
 }
 
-
-
-
 export function isClose(obj1, obj1Radius, obj2, obj2Radius) {
     const minDist = obj1Radius + obj2Radius;
     const dist = obj1.position.distanceTo(obj2.position);
     return dist < minDist;
 }
-
-// keeps v between -min and +min
-function minMagnitude(v, min) {
-    return Math.abs(v) > min
-        ? min * Math.sign(v)
-        : v;
-}
-
-export const aimTowardAndGetDistance = function () {
-    const delta = new THREE.Vector3();
-
-    return function aimTowardAndGetDistance(source, targetPos, maxTurn) {
-        delta.subVectors(targetPos, source.position);
-        // compute the direction we want to be facing
-        const targetRot = Math.atan2(delta.x, delta.z) + Math.PI * 1.5;
-        // rotate in the shortest direction
-        const deltaRot = (targetRot - source.rotation.y + Math.PI * 1.5) % (Math.PI * 2) - Math.PI;
-        // make sure we don't turn faster than maxTurn
-        const deltaRotation = minMagnitude(deltaRot, maxTurn);
-        // keep rotation between 0 and Math.PI * 2
-        source.rotation.y = THREE.MathUtils.euclideanModulo(
-            source.rotation.y + deltaRotation, Math.PI * 2);
-        // return the distance to the target
-        return delta.length();
-    };
-}();
-
-
-
-
-function makeTextTexture(str) {
-    const ctx = document.createElement('canvas').getContext('2d');
-    ctx.canvas.width = 64;
-    ctx.canvas.height = 64;
-    ctx.font = '60px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#FFF';
-    ctx.fillText(str, ctx.canvas.width / 2, ctx.canvas.height / 2);
-    return new THREE.CanvasTexture(ctx.canvas);
-}
-
-export const noteTexture = makeTextTexture('♪');

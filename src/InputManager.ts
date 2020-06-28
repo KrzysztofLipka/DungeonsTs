@@ -84,11 +84,15 @@ export class InputManager {
         }
     }
 
+    //todo refractor and use mousehold for moving
     public calculate = (e) => {
         const clickTarget = this.calculatePositionFromClick(
             e.clientX, e.clientY,
             this.mouse, this.sceneManager.raycaster,
             this.sceneManager.camera, this.sceneManager.scene);
+        if (!clickTarget) {
+            return false;
+        }
         globals.setPositonOfLastClickVector(clickTarget);
 
         if (this.calculateIfElementOfSceneInClickArea(clickTarget, 3)) {
@@ -118,7 +122,11 @@ export class InputManager {
 
         raycaster.setFromCamera(mouse, camera);
         let intersects = raycaster.intersectObjects(scene.children);
-        console.log(intersects);
+
+        console.log(intersects[0].object.userData.type);
+        if (intersects[0]?.object?.userData?.type !== 'walkable') {
+            return;
+        }
         if (!!intersects && intersects.length !== 0) {
             let faceIndex = intersects[0].faceIndex;
             let obj = intersects[0].object;
