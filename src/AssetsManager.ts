@@ -350,13 +350,13 @@ export class AssetsManager {
             globals.player = gameObject;
         }
 
-        this.AddGoblin(60, 7);
+        /*this.AddGoblin(60, 7);
         this.AddGoblin(30, 7);
         this.AddGoblin(70, 3);
         this.AddGoblin(120, 3);
         this.AddGoblin(160, 3);
         this.AddGoblin(155, -10);
-        this.AddGoblin(150, -10);
+        this.AddGoblin(150, -10);*/
     }
 
 

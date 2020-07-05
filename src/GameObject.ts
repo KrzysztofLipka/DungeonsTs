@@ -5,6 +5,7 @@ import { IGameModel } from './AssetsManager';
 import { globals } from './utils'
 import { Vector3 } from 'three';
 import TWEEN from '@tweenjs/tween.js';
+import { threadId } from 'worker_threads';
 
 export class GameObject {
     name: string;
@@ -94,7 +95,7 @@ class SkinInstance extends Component {
         this.model = model;
         if (model?.gltf?.scene) {
             this.animRoot = SkeletonUtils.clone(model.gltf.scene);
-            this.animRoot.name = 'fffffh';
+
         }
 
         this.mixer = new THREE.AnimationMixer(this.animRoot);
@@ -165,11 +166,13 @@ export class Player extends Component {
     attack: any;
     fsm: FiniteStateMachine;
     kForward = new THREE.Vector3(0, 0, 1);
+    transform: THREE.Object3D;
 
     constructor(gameObject: GameObject, importedModel: IGameModel) {
         super(gameObject);
         const model = importedModel;
         this.skinInstance = gameObject.addComponent(SkinInstance, model);
+        this.transform = gameObject.transform;
 
         this.currentPosition = this.skinInstance.gameObject.transform.position;
         this.attack = () => {
@@ -197,10 +200,19 @@ export class Player extends Component {
                     }
 
                     if (globals.playerNeedsToHit && this.skinInstance.gameObject.transform.position.distanceTo(globals.positionOfLastClick) < 5) {
-
                         this.fsm.transition('attack')
+                    }
 
+                    if ((globals.positionOfLastClick.distanceTo(this.transform.position) > 0.5 || globals.isMouseHold) && !globals.playerIsIdle) {
+                        //console.log(16 * globals.deltaTime);
+                        this.transform.translateOnAxis(this.kForward, 16 * globals.deltaTime);
+                    } else {
+                        globals.playerIsIdle = true;
+                        console.log(this.transform);
+                    }
 
+                    if (globals.isMouseHold) {
+                        this.transform.lookAt(globals.positionOfLastClick);
                     }
 
                     if (!globals.playerNeedsToHit && this.skinInstance.gameObject.transform.position.distanceTo(globals.positionOfLastClick) >= 5) {
@@ -230,6 +242,7 @@ export class Player extends Component {
                         this.fsm.transition('idle')
                     }
 
+
                 }
 
 
@@ -243,6 +256,20 @@ export class Player extends Component {
         if (globals.playerRotationNeedsUpdate) {
             //this.skinInstance.gameObject.transform.lookAt(globals.positionOfLastClick);
         }
+
+        //this.transform.translateOnAxis()
+        /*if ((globals.positionOfLastClick.distanceTo(this.transform.position) > 0.5 || globals.isMouseHold) && !globals.playerIsIdle) {
+            //console.log(16 * globals.deltaTime);
+            this.transform.translateOnAxis(this.kForward, 16 * globals.deltaTime);
+        } else {
+            this.fsm.transition('idle');
+        }
+
+        if (globals.isMouseHold) {
+            this.transform.lookAt(globals.positionOfLastClick);
+        }*/
+
+
 
         this.fsm.update();
 

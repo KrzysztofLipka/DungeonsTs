@@ -17,38 +17,21 @@ export class InputManager {
         this.sceneManager = sceneManager;
         this.mouse = new THREE.Vector2();
 
+
         window.addEventListener('mousedown', e => {
+            console.log(globals.positionOfLastClick);
             TWEEN.removeAll();
             globals.isMouseDown = true;
-            let shouldMove = this.calculate(e);
+            let shouldMove = this.calculate(e, true);
 
             globals.playerRotationNeedsUpdate = true;
 
-            const cameraTarget = new THREE.Vector3(
-                globals.positionOfLastClick.x - 50,
-                80,
-                globals.positionOfLastClick.z - 50);
-
             if (shouldMove) {
-
                 globals.playerIsIdle = false;
-                const distance = sceneManager.camera.position.distanceTo(cameraTarget);
-
-                const playerDistance = globals.player.transform.position.distanceTo(globals.positionOfLastClick);
-                const tw = new TWEEN.Tween(sceneManager.camera.position).to(cameraTarget, 60 * distance)
-                    .easing(TWEEN.Easing.Linear.None);
-
-
-                const tw2 = new TWEEN.Tween(globals.player.transform.position).to(globals.positionOfLastClick, 60 * playerDistance)
-                    .easing(TWEEN.Easing.Linear.None);
-
-                tw.onComplete(() => {
-                    globals.playerIsIdle = true;
-
-                })
-                tw.start();
-                tw2.start();
                 globals.player.transform.lookAt(globals.positionOfLastClick);
+                globals.distanceBetweenClickAndPlayer = globals.player.transform.position.distanceTo(globals.positionOfLastClick);
+                globals.onClickCameraPosition = sceneManager.camera.position;
+                //console.log(globals.player.transform.rotation);
             } else {
                 globals.player.transform.lookAt(globals.positionOfLastClick);
             }
@@ -58,10 +41,21 @@ export class InputManager {
         window.addEventListener('mouseup', e => {
             console.log('mouseup');
             globals.isMouseDown = false;
+            if (globals.isMouseHold) {
+                globals.playerIsIdle = true;
+            }
+
             //globals.isMouseClicked = false;
             globals.isMouseHold = false;
             globals.leftButtonHoldTime = 0;
 
+        })
+
+        window.addEventListener('mousemove', e => {
+            if (globals.isMouseHold) {
+                this.calculate(e);
+
+            }
         })
     }
 
@@ -77,7 +71,6 @@ export class InputManager {
 
             globals.isMouseClicked = false;
             globals.isMouseHold = true;
-            console.log('mousehold');
         }
 
         if (globals.cameraPositionNeedsUpdate) {
@@ -85,7 +78,7 @@ export class InputManager {
     }
 
     //todo refractor and use mousehold for moving
-    public calculate = (e) => {
+    public calculate = (e, updateArea: boolean = false) => {
         const clickTarget = this.calculatePositionFromClick(
             e.clientX, e.clientY,
             this.mouse, this.sceneManager.raycaster,
@@ -95,7 +88,7 @@ export class InputManager {
         }
         globals.setPositonOfLastClickVector(clickTarget);
 
-        if (this.calculateIfElementOfSceneInClickArea(clickTarget, 3)) {
+        if (updateArea && this.calculateIfElementOfSceneInClickArea(clickTarget, 3)) {
             globals.playerHitNeedsCalculate = true;
             globals.playerNeedsToHit = true;
         }
@@ -125,43 +118,12 @@ export class InputManager {
 
         console.log(intersects[0].object.userData.type);
         if (intersects[0]?.object?.userData?.type !== 'walkable') {
+            console.log(intersects[0].point);
             return;
         }
         if (!!intersects && intersects.length !== 0) {
-            let faceIndex = intersects[0].faceIndex;
-            let obj = intersects[0].object;
-            var geom = obj.geometry;
-            var faces = obj.geometry.faces;
-            var facesIndices = ["a", "b", "c"];
-            var verts = [];
-            var x_values = [];
-            var z_values = [];
-            var x_sum = 0;
-            var z_sum = 0;
-
-            if (faceIndex % 2 === 0) {
-                faceIndex = faceIndex + 1;
-            } else {
-                faceIndex = faceIndex - 1;
-            }
-            facesIndices.forEach(function (indices) {
-                verts.push(geom.vertices[faces[faceIndex][indices]])
-                if (!x_values.includes(geom.vertices[faces[faceIndex][indices]].x)) {
-                    x_values.push(geom.vertices[faces[faceIndex][indices]].x);
-                    x_sum += geom.vertices[faces[faceIndex][indices]].x;
-
-                }
-
-                if (!z_values.includes(geom.vertices[faces[faceIndex][indices]].z)) {
-                    z_values.push(geom.vertices[faces[faceIndex][indices]].z);
-                    z_sum += geom.vertices[faces[faceIndex][indices]].z;
-                }
-
-            });
-            geom.verticesNeedUpdate = true;
-
-            var target = new THREE.Vector3(x_sum / 2, 0, z_sum / 2);
-            return target;
+            var test = intersects[0].point;
+            return test;
         }
     }
 

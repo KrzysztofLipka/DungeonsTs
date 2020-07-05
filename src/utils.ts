@@ -144,6 +144,9 @@ class Globals {
     attackTime: number = 0;
     lastAtackDirectionWasLeft: boolean = true;
 
+    distanceBetweenClickAndPlayer: number = 0;
+    onClickCameraPosition: THREE.Vector3 = new THREE.Vector3();
+
 
     setPositonOfLastClickVector = (vector: THREE.Vector3) => {
         this.positionOfLastClick.set(vector.x, vector.y, vector.z);

@@ -1,10 +1,13 @@
 import * as THREE from 'three';
 import { IGameModel } from './AssetsManager';
+import { globals } from './utils'
 
 export class SceneManager {
     public scene: THREE.Scene;
     public renderer: THREE.WebGLRenderer;
     public camera: THREE.PerspectiveCamera;
+
+    public cameraVector: THREE.Vector3;
 
     public mount: HTMLDivElement;
     public raycaster: THREE.Raycaster;
@@ -52,6 +55,7 @@ export class SceneManager {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color('black');
         //const canvas: any = document.querySelector('#c');
+        this.cameraVector = new THREE.Vector3(0, 0, 0);
 
         //this.renderer.gammaOutput = true;
         this.mount = document.createElement('div');
@@ -83,11 +87,12 @@ export class SceneManager {
 
         var worldmaterial = new THREE.MeshPhongMaterial({ map: worldTexture, side: THREE.DoubleSide });
 
-        this.addArea(100, 60, 50, 50, tilesMaterial, 0, 0, 0, true);
-        this.addArea(100, 90, 50, 50, tilesMaterial, 137, 0, 0, true);
-        this.addArea(37, 30, 50, 50, brickMaterial, 68.5, 0, 0, true);
+        this.addArea(100, 60, 1, 1, tilesMaterial, 0, 0, 0, true);
+        this.addArea(100, 90, 1, 1, tilesMaterial, 137, 0, 0, true);
+        this.addArea(37, 30, 1, 1, brickMaterial, 68.5, 0, 0, true);
 
         this.addArea(1000, 1000, 1, 1, worldmaterial, 0, -100, -100, false);
+
 
         document.body.appendChild(this.renderer.domElement)
 
@@ -109,8 +114,22 @@ export class SceneManager {
 
     }
 
+    private moveCamera = () => {
+        const cameraTarget = new THREE.Vector3(
+            globals.player.transform.position.x - 50,
+            80,
+            globals.player.transform.position.z - 50);
+
+        let delta = new THREE.Vector3();
+        delta.subVectors(cameraTarget, this.camera.position);
+        this.camera.position.addVectors(this.camera.position, delta);
+    }
+
     public render() {
         this.renderer.render(this.scene, this.camera);
+        if (globals.player?.transform?.position.distanceTo(globals.positionOfLastClick) > 0.5) {
+            this.moveCamera();
+        }
     }
 
 }
