@@ -123,6 +123,8 @@ class Globals {
     playerRotationNeedsUpdate: boolean = false;
     moveSpeed: number = 16;
 
+    isInventoryMode: boolean = false;
+
     isMouseDown: boolean = false;
     leftButtonHoldTime: number = 0;
 
@@ -154,18 +156,9 @@ class Globals {
 
     sounds: THREE.Audio[] = [];
 
-
-
 }
 
 export const globals = new Globals();
-
-export interface IState {
-    stateName: string;
-    enter: () => void;
-    update: () => void;
-    exit?: () => void;
-}
 
 export class FiniteStateMachine {
     states: any[];

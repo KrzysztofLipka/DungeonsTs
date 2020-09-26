@@ -3,7 +3,7 @@ import { removeArrayElement, SafeArray, FiniteStateMachine, isClose } from './ut
 import { SkeletonUtils } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { IGameModel } from './AssetsManager';
 import { globals } from './utils'
-import { Vector3 } from 'three';
+import { Vector3, Color } from 'three';
 import TWEEN from '@tweenjs/tween.js';
 import { threadId } from 'worker_threads';
 
@@ -12,19 +12,25 @@ export class GameObject {
     components: Component[];
     transform: THREE.Object3D;
     id: string;
+    parent: THREE.Scene;
     constructor(parent: THREE.Scene, name) {
         this.name = name;
         this.components = [];
         this.transform = new THREE.Object3D();
+        this.parent = parent;
         if (name === 'player') {
             this.transform.name = 'player';
+
         }
 
         if (name === 'Goblin') {
             this.transform.name = 'goblin';
         }
 
+
+
         parent.add(this.transform);
+
         //todo
     }
     addComponent(ComponentType, ...args) {
@@ -132,7 +138,9 @@ class SkinInstance extends Component {
             if (playonce) { act.reset(); act.setLoop(1, 1); act.clampWhenFinished = true; }
             act.enabled = true;
 
-            if (animName === 'AttackRight' || animName === 'AttackLeft') {
+
+            // todo setup in blender
+            if (animName === 'Attack2' || animName === 'Attack1') {
                 act.setEffectiveTimeScale(6)
             }
 
@@ -163,10 +171,10 @@ class SkinInstance extends Component {
 export class Player extends Component {
     skinInstance: SkinInstance;
     currentPosition: Vector3;
-    attack: any;
     fsm: FiniteStateMachine;
     kForward = new THREE.Vector3(0, 0, 1);
     transform: THREE.Object3D;
+    playerLight: THREE.DirectionalLight;
 
     constructor(gameObject: GameObject, importedModel: IGameModel) {
         super(gameObject);
@@ -175,9 +183,13 @@ export class Player extends Component {
         this.transform = gameObject.transform;
 
         this.currentPosition = this.skinInstance.gameObject.transform.position;
-        this.attack = () => {
-            this.skinInstance.setAnimation('AttackLeft');
-        }
+
+        this.playerLight = new THREE.DirectionalLight(0x629696, 5)
+        this.playerLight.position.set(0, 5, 0);
+
+
+
+        this.gameObject.parent.add(this.playerLight);
 
         this.fsm = new FiniteStateMachine({
             idle: {
@@ -194,6 +206,8 @@ export class Player extends Component {
                 enter: () => { this.skinInstance.setAnimation('Run'); globals.sounds[0].play(); },
                 update: () => {
 
+                    this.movePlayerLight();
+
                     if (globals.playerIsIdle) {
                         this.fsm.transition('idle');
                         globals.sounds[0].pause();
@@ -206,13 +220,20 @@ export class Player extends Component {
                     if ((globals.positionOfLastClick.distanceTo(this.transform.position) > 0.5 || globals.isMouseHold) && !globals.playerIsIdle) {
                         //console.log(16 * globals.deltaTime);
                         this.transform.translateOnAxis(this.kForward, 16 * globals.deltaTime);
+
+
+
+                        //this.playerLight.lookAt(globals.positionOfLastClick.x, 0, globals.positionOfLastClick.z);
+                        //this.playerLight.translateOnAxis(this.kForward2, 16 * globals.deltaTime);
                     } else {
                         globals.playerIsIdle = true;
                         console.log(this.transform);
                     }
 
                     if (globals.isMouseHold) {
-                        this.transform.lookAt(globals.positionOfLastClick);
+                        this.transform.lookAt(globals.positionOfLastClick.x, 0, globals.positionOfLastClick.z);
+                        //this.playerLight.lookAt(this.transform.position.x, 0, this.transform.position.z);
+                        //this.playerLight.translateOnAxis(this.kForward2, 16 * globals.deltaTime);
                     }
 
                     if (!globals.playerNeedsToHit && this.skinInstance.gameObject.transform.position.distanceTo(globals.positionOfLastClick) >= 5) {
@@ -223,10 +244,10 @@ export class Player extends Component {
             attack: {
                 enter: () => {
                     if (globals.lastAtackDirectionWasLeft) {
-                        this.skinInstance.setAnimation('AttackLeft', true)
+                        this.skinInstance.setAnimation('Attack1', true)
                         globals.lastAtackDirectionWasLeft = false;
                     } else {
-                        this.skinInstance.setAnimation('AttackRight', true)
+                        this.skinInstance.setAnimation('Attack2', true)
                         globals.lastAtackDirectionWasLeft = true;
                     }; /*globals.playerComboLevel = 1;*/ globals.attackTime = 0
                 },
@@ -274,6 +295,35 @@ export class Player extends Component {
         this.fsm.update();
 
     }
+
+    movePlayerLight = () => {
+
+        //this.playerLight.lookAt(this.transform.position.x, this.transform.position.y, this.transform.position.z);
+        this.playerLight.target = this.transform
+
+
+        const lightTarget = new THREE.Vector3(
+            this.transform.position.x,
+            5,
+            this.transform.position.z);
+
+
+
+        let delta = new THREE.Vector3();
+        delta.subVectors(lightTarget, this.playerLight.position);
+        this.playerLight.position.addVectors(this.playerLight.position, delta);
+    }
+
+    /*private moveCamera = () => {
+        const cameraTarget = new THREE.Vector3(
+            globals.player.transform.position.x - 50,
+            80,
+            globals.player.transform.position.z - 50);
+
+        let delta = new THREE.Vector3();
+        delta.subVectors(cameraTarget, this.camera.position);
+        this.camera.position.addVectors(this.camera.position, delta);
+    }*/
 
 
 }

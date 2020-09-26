@@ -21,6 +21,7 @@ export class SceneManager {
         this.camera.lookAt(0, 0, 0);
     }
 
+
     private setupRenderer = (clientWidth: number, clientHeight: number) => {
         this.renderer = new THREE.WebGLRenderer(/*{ canvas, alpha: true }*/);
         this.renderer.gammaFactor = 2.2;
@@ -31,7 +32,7 @@ export class SceneManager {
 
     private setupLights = () => {
         const col = 0x9ba9b0
-        const i = 9;
+        const i = 15;
         const light = new THREE.AmbientLight(col, i);
         light.position.set(0, 20, 0);
         //light.intensity = 1;
@@ -87,11 +88,11 @@ export class SceneManager {
 
         var worldmaterial = new THREE.MeshPhongMaterial({ map: worldTexture, side: THREE.DoubleSide });
 
-        this.addArea(100, 60, 1, 1, tilesMaterial, 0, 0, 0, true);
-        this.addArea(100, 90, 1, 1, tilesMaterial, 137, 0, 0, true);
-        this.addArea(37, 30, 1, 1, brickMaterial, 68.5, 0, 0, true);
+        //this.addArea(100, 60, 1, 1, tilesMaterial, 0, 0, 0, true);
+        //this.addArea(100, 90, 1, 1, tilesMaterial, 137, 0, 0, true);
+        //this.addArea(37, 30, 1, 1, brickMaterial, 68.5, 0, 0, true);
 
-        this.addArea(1000, 1000, 1, 1, worldmaterial, 0, -100, -100, false);
+        //this.addArea(1000, 1000, 1, 1, worldmaterial, 0, -100, -100, false);
 
 
         document.body.appendChild(this.renderer.domElement)

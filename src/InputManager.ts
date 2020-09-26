@@ -5,7 +5,6 @@ import * as THREE from 'three';
 //const TWEEN = require('@tweenjs/tween.js');
 import TWEEN from '@tweenjs/tween.js';
 
-
 export class InputManager {
 
     mouseDownTime: Date = new Date();
@@ -13,12 +12,19 @@ export class InputManager {
     sceneManager: SceneManager;
     public mouse: THREE.Vector2;
 
-    constructor(sceneManager: SceneManager, assetsManager: AssetsManager) {
+    public onChestClick: (open: boolean) => void
+
+    constructor(sceneManager: SceneManager, assetsManager: AssetsManager, setOpenUi: (show: boolean) => void) {
         this.sceneManager = sceneManager;
         this.mouse = new THREE.Vector2();
+        this.onChestClick = setOpenUi;
 
 
         window.addEventListener('mousedown', e => {
+            if (globals.isInventoryMode) {
+                return;
+            }
+
             console.log(globals.positionOfLastClick);
             TWEEN.removeAll();
             globals.isMouseDown = true;
@@ -37,6 +43,18 @@ export class InputManager {
             }
 
         })
+
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'f') {
+
+            }
+
+            if (!e.repeat)
+                console.log(`Key "${e.key}" pressed  [event: keydown]`);
+            else
+                console.log(`Key "${e.key}" repeating  [event: keydown]`);
+        });
 
         window.addEventListener('mouseup', e => {
             console.log('mouseup');
@@ -92,7 +110,7 @@ export class InputManager {
             globals.playerHitNeedsCalculate = true;
             globals.playerNeedsToHit = true;
         }
-        //this.cube.translateOnAxis(kForward, distance);
+
         return !!clickTarget;
     }
 
@@ -117,10 +135,22 @@ export class InputManager {
         let intersects = raycaster.intersectObjects(scene.children);
 
         console.log(intersects[0].object.userData.type);
+
+
+        // todo make chest as entity
+        if (intersects[0]?.object?.userData?.type === 'chest') {
+            console.log('chest');
+            globals.isInventoryMode = true;
+            this.onChestClick(true);
+            console.log(globals.isInventoryMode);
+            //this.sceneManager.setCameraToInventoryMode(true);
+        }
+
         if (intersects[0]?.object?.userData?.type !== 'walkable') {
             console.log(intersects[0].point);
             return;
         }
+
         if (!!intersects && intersects.length !== 0) {
             var test = intersects[0].point;
             return test;

@@ -11,11 +11,11 @@ export class GameManager {
     public inputManager: InputManager;
     public then: number = 0;
 
-    constructor(innerWidth: number, innerHeight: number) {
+    constructor(innerWidth: number, innerHeight: number, setOpenUi: (open: boolean) => void) {
         this.gameObjectsManager = new GameObjectManager();
         this.sceneManager = new SceneManager(innerWidth, innerHeight);
         this.assetsManager = new AssetsManager(this.sceneManager.scene, this.sceneManager, this.gameObjectsManager, this.inputManager);
-        this.inputManager = new InputManager(this.sceneManager, this.assetsManager);
+        this.inputManager = new InputManager(this.sceneManager, this.assetsManager, setOpenUi);
     }
 
     private render = (now: number) => {

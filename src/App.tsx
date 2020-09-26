@@ -2,8 +2,14 @@ import React from 'react';
 import './App.css';
 import * as THREE from 'three';
 import { GameManager } from './GameManager'
+import { globals } from './utils';
+import { Inventory } from './ui/Inventory'
 
-class App extends React.Component {
+interface AppState {
+  isUiOpened: boolean;
+}
+
+class App extends React.Component<{}, AppState> {
   height: number = window.innerHeight;
   width: number = window.innerWidth;
   gameManager: GameManager | null = null;
@@ -11,6 +17,11 @@ class App extends React.Component {
   //public scene: THREE.Scene;
   public renderer: THREE.WebGLRenderer;
   public camera: THREE.PerspectiveCamera;
+
+  constructor(props) {
+    super(props);
+    this.state = { isUiOpened: false }
+  }
 
   public el = document.createElement('div');
 
@@ -21,15 +32,20 @@ class App extends React.Component {
     this.gameManager.init()
   }
 
-  sceneSetup = () => {
+  setOpenUi = (open: boolean) => {
+    this.setState({ isUiOpened: open })
+  }
 
-    this.gameManager = new GameManager(this.width, this.height);
+  sceneSetup = () => {
+    this.gameManager = new GameManager(this.width, this.height, this.setOpenUi);
     this.gameManager.sceneManager.render();
   }
 
 
   render() {
-    return <div></div>
+    return <div>
+      {this.state.isUiOpened && <Inventory setUiOpen={this.setOpenUi} />}
+    </div>
     //return <canvas id='c'></canvas>
   }
 
