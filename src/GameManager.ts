@@ -34,7 +34,4 @@ export class GameManager {
         this.assetsManager.init();
         requestAnimationFrame(this.render);
     }
-
 }
-
-//export default new GameManager();

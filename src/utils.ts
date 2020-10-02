@@ -3,10 +3,10 @@ import * as THREE from 'three';
 import { GameObject } from './GameObject';
 
 //todo use that instead of ShinnedMesh Clonning
-export const cloneGltf = (gltf): GLTF => {
+export const cloneGltf = (gltf: THREE.Group): any => {
     const clone = {
-        animations: gltf.animations,
-        scene: gltf.scene.clone(true),
+        animations: gltf[0].animations,
+        scene: gltf[0].scene.clone(true),
         scenes: [],
         cameras: [],
         asset: {},
@@ -16,7 +16,7 @@ export const cloneGltf = (gltf): GLTF => {
 
     const skinnedMeshes = {};
 
-    gltf.scene.traverse(node => {
+    clone.scene.traverse(node => {
         if (node.isSkinnedMesh) {
             skinnedMeshes[node.name] = node;
         }
@@ -120,7 +120,6 @@ class Globals {
     time: number = 0;
     deltaTime: number = 0;
     positionOfLastClick: THREE.Vector3;
-    playerRotationNeedsUpdate: boolean = false;
     moveSpeed: number = 16;
 
     isInventoryMode: boolean = false;
@@ -132,7 +131,6 @@ class Globals {
     isMouseClicked: boolean = false;
     isMouseHold: boolean = false;
 
-    cameraPositionNeedsUpdate: boolean = false;
     player: GameObject
     playerRadius: number = 4;
 
@@ -142,13 +140,8 @@ class Globals {
 
     playerIsIdle: boolean = true;
 
-    //playerComboLevel: number = 0;
     attackTime: number = 0;
-    lastAtackDirectionWasLeft: boolean = true;
-
-    distanceBetweenClickAndPlayer: number = 0;
-    onClickCameraPosition: THREE.Vector3 = new THREE.Vector3();
-
+    lastAttackAnimatianWas2: boolean = true;
 
     setPositonOfLastClickVector = (vector: THREE.Vector3) => {
         this.positionOfLastClick.set(vector.x, vector.y, vector.z);

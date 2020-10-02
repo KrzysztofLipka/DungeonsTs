@@ -5,7 +5,6 @@ import { SceneManager } from './SceneManager';
 import { globals } from './utils';
 import { GameObjectManager, Player, Enemy } from './GameObject';
 import { InputManager } from './InputManager';
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 
 export interface IGameModel {
     name: string;
@@ -75,7 +74,6 @@ export class AssetsManager {
         this.gameObjectManager = gameObjectManager;
 
         this.audioLoader = new THREE.AudioLoader();
-        //console.log(this.audioLoader);
         this.listener = new THREE.AudioListener();
         this.sceneManager.camera.add(this.listener);
         this.sound = new THREE.Audio(this.listener);
@@ -159,9 +157,7 @@ export class AssetsManager {
         let asset = this.assets.find(asset => asset.name === assetName);
         if (asset?.gltf?.scene) {
             let clonedAsset: any = SkeletonUtils.clone(asset.gltf.scene);
-            //console.log(clonedAsset);
             if (scales) {
-                //clonedAsset.scale(scales.scaleX, scales.scaleY, scales.scaleZ);
                 clonedAsset.scale.x = scales.scaleX;
                 clonedAsset.scale.y = scales.scaleY;
                 clonedAsset.scale.z = scales.scaleZ;
@@ -180,11 +176,8 @@ export class AssetsManager {
     }
 
     public getAssetFromGroup = (assetGroupName: string,/*assetName: string,*/) => {
-        console.log(this.assetsGroups);
         let asset = this.assetsGroups.find(assetGroup => assetGroup.groupName === assetGroupName);
-        console.log(asset);
         if (asset?.gltf?.scene?.children && asset?.gltf?.scene?.children.length > 0) {
-            console.log(asset.names)
             asset.names.forEach(nameofobj => {
                 let assetForClone = asset.gltf.scene.children.find(model => model.name === nameofobj);
                 if (assetForClone) {
@@ -206,7 +199,6 @@ export class AssetsManager {
 
     private loadModels = () => {
         this.models.forEach(model => {
-            console.log(model.name);
             this.gltfLoader.load(model.url, (gltf) => { model.gltf = gltf; model.gltf.userData = { namee: model.name } })
         });
     }
@@ -219,7 +211,6 @@ export class AssetsManager {
                     const player = model.gltf.scene.children[0].children.filter(child => child.name === 'Player')[0] as THREE.Mesh;
 
                     if (player.material instanceof THREE.MeshStandardMaterial) {
-                        console.log('fff');
                         player.material.flatShading = false;
                         player.material.opacity = 1000;
                         player.material.roughness = 1000;
@@ -227,10 +218,6 @@ export class AssetsManager {
                         //player.material.metalness = 0.8;
                         player.material.skinning = true;
                         player.castShadow = true;
-                        //player.material.transparent = true;
-
-                        //player.material.needsUpdate = true;
-                        //player.material.wireframe = true;
                         player.material.vertexTangents = true;
 
                     }
@@ -243,6 +230,10 @@ export class AssetsManager {
 
                     const armor = model.gltf.scene.children[0].children.filter(child => child.name === 'Armor')[0]
                     armor.visible = false;
+                }
+
+                if (model.name === 'Goblin') {
+                    model.gltf.userData = { test: 'ffff' }
                 }
                 const animsByName = new Map();
                 model.gltf.animations.forEach(
@@ -302,8 +293,6 @@ export class AssetsManager {
     public AddGoblin = (posX: number, posZ: number) => {
         const gameObject = this.gameObjectManager.createGameObject(this.scene, 'Goblin');
         gameObject.addComponent(Enemy, this.getGameModel('Goblin'));
-
-        //tu lezy problem
         gameObject.transform.position.x = posX;
         gameObject.transform.position.z = posZ;
 
@@ -340,35 +329,6 @@ export class AssetsManager {
         /////////////////////////////////////////////////////
         this.getAssetFromGroup('fence');
         this.getAssetFromGroup('walls');
-        /*this.addObject3dToScene('Brick1', { posX: 50, posY: 0, posZ: 14 });
-        this.addObject3dToScene('Brick1', { posX: 50, posY: 0, posZ: -14 });
-
-        this.addObject3dToScene('Brick1', { posX: 68, posY: 0, posZ: 14 });
-        this.addObject3dToScene('Brick1', { posX: 68, posY: 0, posZ: -14 });
-
-        this.addObject3dToScene('Brick2', { posX: 55, posY: 3, posZ: 14 });
-        this.addObject3dToScene('Brick2', { posX: 55, posY: 3, posZ: -14 });
-
-        this.addObject3dToScene('Brick2', { posX: 55, posY: -3, posZ: 14 });
-        this.addObject3dToScene('Brick2', { posX: 55, posY: -3, posZ: -14 });
-
-        this.addObject3dToScene('StonePillar', { posX: 67, posY: -30, posZ: -14 }, Math.PI);
-
-
-        this.addObject3dToScene('Brick1', { posX: 84, posY: 0, posZ: 14 });
-        this.addObject3dToScene('Brick1', { posX: 84, posY: 0, posZ: -14 });
-
-        this.addObject3dToScene('Brick2', { posX: 72, posY: 3, posZ: 14 });
-        this.addObject3dToScene('Brick2', { posX: 72, posY: 3, posZ: -14 });
-
-        this.addObject3dToScene('Brick2', { posX: 72, posY: -3, posZ: 14 });
-        this.addObject3dToScene('Brick2', { posX: 72, posY: -3, posZ: -14 });
-
-        this.addObject3dToScene('Doors', { posX: 18, posY: 0, posZ: 26 }, Math.PI);
-
-        this.addObject3dToScene('StonePillar', { posX: 2, posY: 0, posZ: 28 }, Math.PI);
-
-        this.addObject3dToScene('StonePillar', { posX: 45, posY: 0, posZ: 28 }, Math.PI);*/
 
         this.addObject3dToScene('Floor', { posX: 0, posY: 0, posZ: 0 }, Math.PI, 'walkable');
 
@@ -381,18 +341,6 @@ export class AssetsManager {
         this.addObject3dToScene('BridgeTop', { posX: 27, posY: -3, posZ: 0 }, Math.PI / 2, 'walkable');
 
         this.addObject3dToScene('BridgeBottom', { posX: 27, posY: -3, posZ: 1 }, Math.PI / 2);
-
-
-        //StoneFloor
-
-
-        /*this.addObject3dToScene('StoneWall', { posX: -20, posY: 6, posZ: 32 }, Math.PI);
-
-        this.addObject3dToScene('Stonewall2', { posX: 22, posY: 6, posZ: 32 }, Math.PI);
-
-        this.addAsset('WallAsset', { posX: 104, posY: -23, posZ: -36 }, { scaleX: 2, scaleY: 4, scaleZ: 4 }, 3 * Math.PI / 2);
-
-        this.addAsset('WallAsset', { posX: 104, posY: -23, posZ: 37 }, { scaleX: -2, scaleY: 4, scaleZ: 4 }, 3 * Math.PI / 2);*/
 
         {
             const gameObject = this.gameObjectManager.createGameObject(this.scene, 'player');

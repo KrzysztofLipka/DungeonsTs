@@ -23,8 +23,7 @@ export class SceneManager {
 
 
     private setupRenderer = (clientWidth: number, clientHeight: number) => {
-        this.renderer = new THREE.WebGLRenderer(/*{ canvas, alpha: true }*/);
-        this.renderer.gammaFactor = 2.2;
+        this.renderer = new THREE.WebGLRenderer();
         this.renderer.physicallyCorrectLights = true;
         this.renderer.setSize(clientWidth, clientHeight);
         this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -35,11 +34,9 @@ export class SceneManager {
         const i = 15;
         const light = new THREE.AmbientLight(col, i);
         light.position.set(0, 20, 0);
-        //light.intensity = 1;
         this.scene.add(light);
 
         const light2 = new THREE.PointLight(0x9ba9b0, 1000);
-        //light2.lookAt(180, -40, 0);
         light2.position.set(140, -20, -55);
         this.scene.add(light2);
     }
@@ -52,13 +49,9 @@ export class SceneManager {
     }
 
     constructor(clientWidth: number, clientHeight: number) {
-        //const canvas: | HTMLCanvasElement = document.querySelector('#c');
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color('black');
-        //const canvas: any = document.querySelector('#c');
         this.cameraVector = new THREE.Vector3(0, 0, 0);
-
-        //this.renderer.gammaOutput = true;
         this.mount = document.createElement('div');
 
 
@@ -80,21 +73,6 @@ export class SceneManager {
         brickTexture.wrapS = THREE.RepeatWrapping;
         brickTexture.wrapT = THREE.RepeatWrapping;
         brickTexture.repeat.set(6, 2);
-
-        var worldTexture = new THREE.TextureLoader().load("background.jpg");
-
-        var tilesMaterial = new THREE.MeshPhongMaterial({ map: tilesTexture, side: THREE.DoubleSide });
-        var brickMaterial = new THREE.MeshPhongMaterial({ map: brickTexture, side: THREE.DoubleSide });
-
-        var worldmaterial = new THREE.MeshPhongMaterial({ map: worldTexture, side: THREE.DoubleSide });
-
-        //this.addArea(100, 60, 1, 1, tilesMaterial, 0, 0, 0, true);
-        //this.addArea(100, 90, 1, 1, tilesMaterial, 137, 0, 0, true);
-        //this.addArea(37, 30, 1, 1, brickMaterial, 68.5, 0, 0, true);
-
-        //this.addArea(1000, 1000, 1, 1, worldmaterial, 0, -100, -100, false);
-
-
         document.body.appendChild(this.renderer.domElement)
 
     }

@@ -3,9 +3,8 @@ import { removeArrayElement, SafeArray, FiniteStateMachine, isClose } from './ut
 import { SkeletonUtils } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { IGameModel } from './AssetsManager';
 import { globals } from './utils'
-import { Vector3, Color } from 'three';
+import { Vector3 } from 'three';
 import TWEEN from '@tweenjs/tween.js';
-import { threadId } from 'worker_threads';
 
 export class GameObject {
     name: string;
@@ -27,16 +26,11 @@ export class GameObject {
             this.transform.name = 'goblin';
         }
 
-
-
         parent.add(this.transform);
 
-        //todo
     }
     addComponent(ComponentType, ...args) {
         const component = new ComponentType(this, ...args);
-        //if (ComponentType == SkinnedMesh) {
-        //}
         this.components.push(component);
         return component;
     }
@@ -53,10 +47,8 @@ export class GameObject {
     }
 }
 
-export class Component {
+export abstract class Component {
     gameObject: GameObject
-    //id: string;
-
     constructor(gameObject) {
         this.gameObject = gameObject;
 
@@ -86,13 +78,24 @@ export class GameObjectManager {
         globals.playerHitNeedsCalculate = false;
         TWEEN.update();
     }
+    get gameObjectsArray() {
+        return this.gameObjects
+    }
+
+    getSkinInstance(obj: any) {
+        return obj.components.find(obj => obj instanceof SkinInstance)
+    }
+
+    getGameObjectNearClickArea(clickArea: THREE.Vector3, objectType: string, distance: number) {
+
+    }
 
 }
 
 
 class SkinInstance extends Component {
     model: IGameModel;
-    animRoot: any;
+    animRoot: THREE.Object3D;
     mixer: any;
     actions: Map<any, any>;
 
@@ -100,12 +103,13 @@ class SkinInstance extends Component {
         super(gameObject);
         this.model = model;
         if (model?.gltf?.scene) {
-            this.animRoot = SkeletonUtils.clone(model.gltf.scene);
-
+            this.animRoot = SkeletonUtils.clone(model.gltf.scene) as THREE.Object3D;
+            this.animRoot.userData = { test: 'hhhhh' };
         }
 
         this.mixer = new THREE.AnimationMixer(this.animRoot);
         gameObject.transform.add(this.animRoot);
+        gameObject.transform.userData = { test: 'fffff' }
         this.actions = new Map();
         this.loadActions();
     }
@@ -125,7 +129,7 @@ class SkinInstance extends Component {
 
 
     setAnimation = (animName, playonce?: boolean) => {
-        //console.log(this.actions);
+
         if (this.actions.get(animName)) {
             //const clip: THREE.AnimationClip = this.model.animations.get(animName);
             // turn off all current actions
@@ -193,7 +197,7 @@ export class Player extends Component {
 
         this.fsm = new FiniteStateMachine({
             idle: {
-                enter: () => { this.skinInstance.setAnimation('Idle'); /*globals.player.transform.lookAt(globals.positionOfLastClick);*/ },
+                enter: () => { this.skinInstance.setAnimation('Idle'); },
                 update: () => {
                     if (!globals.playerIsIdle) {
 
@@ -213,42 +217,35 @@ export class Player extends Component {
                         globals.sounds[0].pause();
                     }
 
-                    if (globals.playerNeedsToHit && this.skinInstance.gameObject.transform.position.distanceTo(globals.positionOfLastClick) < 5) {
+                    const playerPosition = this.transform.position;
+
+                    if (globals.playerNeedsToHit && playerPosition.distanceTo(globals.positionOfLastClick) < 5) {
                         this.fsm.transition('attack')
                     }
 
-                    if ((globals.positionOfLastClick.distanceTo(this.transform.position) > 0.5 || globals.isMouseHold) && !globals.playerIsIdle) {
-                        //console.log(16 * globals.deltaTime);
+                    if ((globals.positionOfLastClick.distanceTo(playerPosition) > 0.5 || globals.isMouseHold) && !globals.playerIsIdle) {
                         this.transform.translateOnAxis(this.kForward, 16 * globals.deltaTime);
-
-
-
-                        //this.playerLight.lookAt(globals.positionOfLastClick.x, 0, globals.positionOfLastClick.z);
-                        //this.playerLight.translateOnAxis(this.kForward2, 16 * globals.deltaTime);
                     } else {
                         globals.playerIsIdle = true;
-                        console.log(this.transform);
                     }
 
                     if (globals.isMouseHold) {
                         this.transform.lookAt(globals.positionOfLastClick.x, 0, globals.positionOfLastClick.z);
-                        //this.playerLight.lookAt(this.transform.position.x, 0, this.transform.position.z);
-                        //this.playerLight.translateOnAxis(this.kForward2, 16 * globals.deltaTime);
                     }
 
-                    if (!globals.playerNeedsToHit && this.skinInstance.gameObject.transform.position.distanceTo(globals.positionOfLastClick) >= 5) {
+                    if (!globals.playerNeedsToHit && playerPosition.distanceTo(globals.positionOfLastClick) >= 5) {
                         globals.playerNeedsToHit = false;
                     }
                 }
             },
             attack: {
                 enter: () => {
-                    if (globals.lastAtackDirectionWasLeft) {
+                    if (globals.lastAttackAnimatianWas2) {
                         this.skinInstance.setAnimation('Attack1', true)
-                        globals.lastAtackDirectionWasLeft = false;
+                        globals.lastAttackAnimatianWas2 = false;
                     } else {
                         this.skinInstance.setAnimation('Attack2', true)
-                        globals.lastAtackDirectionWasLeft = true;
+                        globals.lastAttackAnimatianWas2 = true;
                     }; /*globals.playerComboLevel = 1;*/ globals.attackTime = 0
                 },
                 update: () => {
@@ -256,7 +253,6 @@ export class Player extends Component {
                     if (globals.attackTime === 40) {
 
                         globals.playerNeedsToHit = false;
-                        console.log('player is attacking');
                         globals.sounds[1].play();
 
                         //attackTime = 0;
@@ -274,33 +270,11 @@ export class Player extends Component {
     }
 
     update = () => {
-        if (globals.playerRotationNeedsUpdate) {
-            //this.skinInstance.gameObject.transform.lookAt(globals.positionOfLastClick);
-        }
-
-        //this.transform.translateOnAxis()
-        /*if ((globals.positionOfLastClick.distanceTo(this.transform.position) > 0.5 || globals.isMouseHold) && !globals.playerIsIdle) {
-            //console.log(16 * globals.deltaTime);
-            this.transform.translateOnAxis(this.kForward, 16 * globals.deltaTime);
-        } else {
-            this.fsm.transition('idle');
-        }
-
-        if (globals.isMouseHold) {
-            this.transform.lookAt(globals.positionOfLastClick);
-        }*/
-
-
-
         this.fsm.update();
-
     }
 
     movePlayerLight = () => {
-
-        //this.playerLight.lookAt(this.transform.position.x, this.transform.position.y, this.transform.position.z);
         this.playerLight.target = this.transform
-
 
         const lightTarget = new THREE.Vector3(
             this.transform.position.x,
@@ -313,19 +287,6 @@ export class Player extends Component {
         delta.subVectors(lightTarget, this.playerLight.position);
         this.playerLight.position.addVectors(this.playerLight.position, delta);
     }
-
-    /*private moveCamera = () => {
-        const cameraTarget = new THREE.Vector3(
-            globals.player.transform.position.x - 50,
-            80,
-            globals.player.transform.position.z - 50);
-
-        let delta = new THREE.Vector3();
-        delta.subVectors(cameraTarget, this.camera.position);
-        this.camera.position.addVectors(this.camera.position, delta);
-    }*/
-
-
 }
 
 export class Enemy extends Component {

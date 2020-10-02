@@ -1,6 +1,7 @@
 import { globals } from './utils';
 import { SceneManager } from './SceneManager';
 import { AssetsManager } from './AssetsManager';
+
 import * as THREE from 'three';
 //const TWEEN = require('@tweenjs/tween.js');
 import TWEEN from '@tweenjs/tween.js';
@@ -11,6 +12,7 @@ export class InputManager {
     mouseUpTime: Date = new Date();
     sceneManager: SceneManager;
     public mouse: THREE.Vector2;
+    assetsManager: AssetsManager;
 
     public onChestClick: (open: boolean) => void
 
@@ -18,26 +20,19 @@ export class InputManager {
         this.sceneManager = sceneManager;
         this.mouse = new THREE.Vector2();
         this.onChestClick = setOpenUi;
-
+        this.assetsManager = assetsManager;
 
         window.addEventListener('mousedown', e => {
             if (globals.isInventoryMode) {
                 return;
             }
 
-            console.log(globals.positionOfLastClick);
             TWEEN.removeAll();
             globals.isMouseDown = true;
             let shouldMove = this.calculate(e, true);
-
-            globals.playerRotationNeedsUpdate = true;
-
             if (shouldMove) {
                 globals.playerIsIdle = false;
                 globals.player.transform.lookAt(globals.positionOfLastClick);
-                globals.distanceBetweenClickAndPlayer = globals.player.transform.position.distanceTo(globals.positionOfLastClick);
-                globals.onClickCameraPosition = sceneManager.camera.position;
-                //console.log(globals.player.transform.rotation);
             } else {
                 globals.player.transform.lookAt(globals.positionOfLastClick);
             }
@@ -57,7 +52,6 @@ export class InputManager {
         });
 
         window.addEventListener('mouseup', e => {
-            console.log('mouseup');
             globals.isMouseDown = false;
             if (globals.isMouseHold) {
                 globals.playerIsIdle = true;
@@ -84,15 +78,14 @@ export class InputManager {
 
         if (globals.leftButtonHoldTime > 1 && globals.leftButtonHoldTime <= 20) {
             globals.isMouseClicked = true;
-            console.log('mouseclick');
         } if (globals.leftButtonHoldTime > 20) {
 
             globals.isMouseClicked = false;
             globals.isMouseHold = true;
         }
 
-        if (globals.cameraPositionNeedsUpdate) {
-        }
+        //if (globals.cameraPositionNeedsUpdate) {
+        //}
     }
 
     //todo refractor and use mousehold for moving
@@ -126,7 +119,7 @@ export class InputManager {
 
     }
 
-    calculatePositionFromClick = (clientX, clientY, mouse, raycaster, camera, scene) => {
+    calculatePositionFromClick = (clientX: number, clientY: number, mouse, raycaster: THREE.Raycaster, camera: THREE.Camera, scene: THREE.Scene) => {
         //let mouse: THREE.Vector2 
         mouse.x = (clientX / window.innerWidth) * 2 - 1;
         mouse.y = - (clientY / window.innerHeight) * 2 + 1;
@@ -134,20 +127,13 @@ export class InputManager {
         raycaster.setFromCamera(mouse, camera);
         let intersects = raycaster.intersectObjects(scene.children);
 
-        console.log(intersects[0].object.userData.type);
-
-
         // todo make chest as entity
         if (intersects[0]?.object?.userData?.type === 'chest') {
-            console.log('chest');
             globals.isInventoryMode = true;
             this.onChestClick(true);
-            console.log(globals.isInventoryMode);
-            //this.sceneManager.setCameraToInventoryMode(true);
         }
 
         if (intersects[0]?.object?.userData?.type !== 'walkable') {
-            console.log(intersects[0].point);
             return;
         }
 
@@ -156,6 +142,4 @@ export class InputManager {
             return test;
         }
     }
-
-
 }
