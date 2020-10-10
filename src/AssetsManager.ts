@@ -3,7 +3,11 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { SkeletonUtils } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { SceneManager } from './SceneManager';
 import { globals } from './utils';
-import { GameObjectManager, Player, Enemy } from './GameObject';
+import { GameObjectManager } from './GameObject';
+import { NpcManager } from './NpcManager';
+import { Player } from './components/Player';
+import { Enemy } from './components/Enemy'
+
 import { InputManager } from './InputManager';
 
 export interface IGameModel {
@@ -50,6 +54,8 @@ export class AssetsManager {
     then: number = 0;
     sceneManager: SceneManager;
     gameObjectManager: GameObjectManager;
+    npcManager: NpcManager;
+    setupNpc: () => void;
 
     public audioLoader: THREE.AudioLoader;
     public sound: THREE.Audio;
@@ -57,7 +63,7 @@ export class AssetsManager {
     listener: THREE.AudioListener;
 
 
-    constructor(scene: THREE.Scene, sceneManager: SceneManager, gameObjectManager: GameObjectManager, inputManager: InputManager) {
+    constructor(scene: THREE.Scene, sceneManager: SceneManager, gameObjectManager: GameObjectManager, inputManager: InputManager, npcManager: NpcManager, setupNpc: () => void) {
         this.manager = new THREE.LoadingManager();
         this.manager.onLoad = this.init;
         this.gltfLoader = new GLTFLoader(this.manager);
@@ -69,6 +75,7 @@ export class AssetsManager {
         this.loadAssets();
         this.addAssetsGroups();
         this.loadAssetsGroups();
+        this.setupNpc = setupNpc;
 
 
         this.gameObjectManager = gameObjectManager;
@@ -78,6 +85,7 @@ export class AssetsManager {
         this.sceneManager.camera.add(this.listener);
         this.sound = new THREE.Audio(this.listener);
         this.sound2 = new THREE.Audio(this.listener);
+        this.npcManager = npcManager;
     }
 
 
@@ -342,19 +350,24 @@ export class AssetsManager {
 
         this.addObject3dToScene('BridgeBottom', { posX: 27, posY: -3, posZ: 1 }, Math.PI / 2);
 
-        {
-            const gameObject = this.gameObjectManager.createGameObject(this.scene, 'player');
-            gameObject.addComponent(Player, this.getGameModel('Knight'));
-            globals.player = gameObject;
-        }
 
-        this.AddGoblin(60, 7);
+
+        const gameObject = this.gameObjectManager.createGameObject(this.scene, 'player');
+        gameObject.addComponent(Player, this.getGameModel('Knight'));
+        globals.player = gameObject;
+
+        //this.npcManager.addEnemy(1, 1);
+
+        //this.AddGoblin(60, 7);
+        this.setupNpc();
+
         //this.AddGoblin(60, 8);
         //this.AddGoblin(70, 3);
         //this.AddGoblin(120, 3);
         //this.AddGoblin(160, 3);
         //this.AddGoblin(155, -10);
         //this.AddGoblin(150, -10);
+
     }
 
 

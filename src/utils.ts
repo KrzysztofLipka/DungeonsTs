@@ -1,59 +1,6 @@
-import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import * as THREE from 'three';
 import { GameObject } from './GameObject';
-
-//todo use that instead of ShinnedMesh Clonning
-export const cloneGltf = (gltf: THREE.Group): any => {
-    const clone = {
-        animations: gltf[0].animations,
-        scene: gltf[0].scene.clone(true),
-        scenes: [],
-        cameras: [],
-        asset: {},
-        parser: null,
-        userData: null
-    };
-
-    const skinnedMeshes = {};
-
-    clone.scene.traverse(node => {
-        if (node.isSkinnedMesh) {
-            skinnedMeshes[node.name] = node;
-        }
-    });
-
-    const cloneBones = {};
-    const cloneSkinnedMeshes = {};
-
-    clone.scene.traverse(node => {
-        if (node.isBone) {
-            cloneBones[node.name] = node;
-        }
-
-        if (node.isSkinnedMesh) {
-            cloneSkinnedMeshes[node.name] = node;
-        }
-    });
-
-    for (let name in skinnedMeshes) {
-        const skinnedMesh = skinnedMeshes[name];
-        const skeleton = skinnedMesh.skeleton;
-        const cloneSkinnedMesh = cloneSkinnedMeshes[name];
-
-        const orderedCloneBones = [];
-
-        for (let i = 0; i < skeleton.bones.length; ++i) {
-            const cloneBone = cloneBones[skeleton.bones[i].name];
-            orderedCloneBones.push(cloneBone);
-        }
-
-        cloneSkinnedMesh.bind(
-            new THREE.Skeleton(orderedCloneBones, skeleton.boneInverses),
-            cloneSkinnedMesh.matrixWorld);
-    }
-
-    return clone;
-}
+import { HoldableButton } from './InputManager';
 
 export const removeArrayElement = (array: any[], element: number) => {
     const ndx = array.indexOf(element);
@@ -72,6 +19,7 @@ export class SafeArray {
         this.array = [];
         this.addQueue = [];
         this.removeQueue = new Set();
+
     }
     get isEmpty() {
         return this.addQueue.length + this.array.length > 0;
@@ -115,7 +63,10 @@ class Globals {
 
     constructor() {
         this.positionOfLastClick = new THREE.Vector3();
+        this.leftMouseButton = new HoldableButton();
     }
+
+    leftMouseButton: HoldableButton;
 
     time: number = 0;
     deltaTime: number = 0;
@@ -124,20 +75,11 @@ class Globals {
 
     isInventoryMode: boolean = false;
 
-    isMouseDown: boolean = false;
-    leftButtonHoldTime: number = 0;
+    player: GameObject;
 
-
-    isMouseClicked: boolean = false;
-    isMouseHold: boolean = false;
-
-    player: GameObject
     playerRadius: number = 4;
-
     playerHitNeedsCalculate = false;
-
     playerNeedsToHit = false;
-
     playerIsIdle: boolean = true;
 
     attackTime: number = 0;

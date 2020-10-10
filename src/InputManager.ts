@@ -4,7 +4,53 @@ import { AssetsManager } from './AssetsManager';
 
 import * as THREE from 'three';
 //const TWEEN = require('@tweenjs/tween.js');
-import TWEEN from '@tweenjs/tween.js';
+//import TWEEN from '@tweenjs/tween.js';
+export enum ButtonState {
+    Up,
+    Hold,
+    Down
+}
+
+export class Button {
+    state: ButtonState;
+    constructor() {
+        this.state = ButtonState.Up
+    }
+
+}
+
+export class HoldableButton extends Button {
+
+    buttonHoldtime: number;
+    constructor() {
+        super();
+        this.buttonHoldtime = 0;
+    };
+
+    incrementButtonHoldTime() {
+        this.buttonHoldtime += 1;
+    }
+
+    resetButtonHoldTime() {
+        this.buttonHoldtime = 0;
+    }
+
+    update(): void {
+
+        if (this.state === ButtonState.Down) {
+            console.log('down');
+            this.incrementButtonHoldTime();
+        }
+
+        if (this.buttonHoldtime > 1 && this.buttonHoldtime <= 20) {
+            this.state = ButtonState.Down;
+        }
+
+        if (this.buttonHoldtime > 20) {
+            this.state = ButtonState.Hold;
+        }
+    }
+}
 
 export class InputManager {
 
@@ -23,12 +69,13 @@ export class InputManager {
         this.assetsManager = assetsManager;
 
         window.addEventListener('mousedown', e => {
+
             if (globals.isInventoryMode) {
                 return;
             }
 
-            TWEEN.removeAll();
-            globals.isMouseDown = true;
+            globals.leftMouseButton.state = ButtonState.Down;
+
             let shouldMove = this.calculate(e, true);
             if (shouldMove) {
                 globals.playerIsIdle = false;
@@ -39,32 +86,17 @@ export class InputManager {
 
         })
 
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'f') {
-
-            }
-
-            if (!e.repeat)
-                console.log(`Key "${e.key}" pressed  [event: keydown]`);
-            else
-                console.log(`Key "${e.key}" repeating  [event: keydown]`);
-        });
-
         window.addEventListener('mouseup', e => {
-            globals.isMouseDown = false;
-            if (globals.isMouseHold) {
+            if (globals.leftMouseButton.state === ButtonState.Hold) {
                 globals.playerIsIdle = true;
             }
-
-            //globals.isMouseClicked = false;
-            globals.isMouseHold = false;
-            globals.leftButtonHoldTime = 0;
+            globals.leftMouseButton.state = ButtonState.Up
+            globals.leftMouseButton.resetButtonHoldTime();
 
         })
 
         window.addEventListener('mousemove', e => {
-            if (globals.isMouseHold) {
+            if (globals.leftMouseButton.state === ButtonState.Hold) {
                 this.calculate(e);
 
             }
@@ -72,20 +104,7 @@ export class InputManager {
     }
 
     update = () => {
-        if (globals.isMouseDown) {
-            globals.leftButtonHoldTime += 1;
-        }
-
-        if (globals.leftButtonHoldTime > 1 && globals.leftButtonHoldTime <= 20) {
-            globals.isMouseClicked = true;
-        } if (globals.leftButtonHoldTime > 20) {
-
-            globals.isMouseClicked = false;
-            globals.isMouseHold = true;
-        }
-
-        //if (globals.cameraPositionNeedsUpdate) {
-        //}
+        globals.leftMouseButton.update();
     }
 
     //todo refractor and use mousehold for moving
@@ -99,7 +118,7 @@ export class InputManager {
         }
         globals.setPositonOfLastClickVector(clickTarget);
 
-        if (updateArea && this.calculateIfElementOfSceneInClickArea(clickTarget, 3)) {
+        if (updateArea && this.calculateIfElementOfSceneInClickArea(clickTarget, 5)) {
             globals.playerHitNeedsCalculate = true;
             globals.playerNeedsToHit = true;
         }
