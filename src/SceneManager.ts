@@ -26,26 +26,36 @@ export class SceneManager {
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.physicallyCorrectLights = true;
         this.renderer.setSize(clientWidth, clientHeight);
+        this.renderer.toneMapping = THREE.ReinhardToneMapping;
+        this.renderer.toneMappingExposure = 2;
         this.renderer.setPixelRatio(window.devicePixelRatio);
     }
 
     private setupLights = () => {
-        const col = 0x9ba9b0
-        const i = 15;
-        const light = new THREE.AmbientLight(col, i);
-        light.position.set(0, 20, 0);
+        const light = new THREE.HemisphereLight(0xffeeb1, 0xffffff, 8);
         this.scene.add(light);
 
-        const light2 = new THREE.PointLight(0x9ba9b0, 1000);
-        light2.position.set(140, -20, -55);
-        this.scene.add(light2);
+        //const light2 = new THREE.PointLight(0x9ba9b0, 1000);
+        //light2.position.set(140, -20, -55);
+        //this.scene.add(light2);
     }
 
-    private setupFog = () => {
-        const color = 0x2d496b;  // white
-        const near = 85.6;
-        const far = 140;
-        this.scene.fog = new THREE.Fog(color, near, far);
+    //private setupFog = () => {
+    //    const color = 0x2d496b;
+    //    const near = 105.6;
+    //    const far = 140;
+    //    this.scene.fog = new THREE.Fog(color, near, far);
+    //}
+
+    resizeRendererToDisplaySize(renderer: THREE.Renderer) {
+        const canvas = this.renderer.domElement;
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        const needResize = canvas.width !== width || canvas.height !== height;
+        if (needResize) {
+            renderer.setSize(width, height, false);
+        }
+        return needResize;
     }
 
     constructor(clientWidth: number, clientHeight: number) {
@@ -58,7 +68,7 @@ export class SceneManager {
         this.setupCamera(clientWidth, clientHeight);
         this.setupRenderer(clientWidth, clientHeight);
         this.setupLights();
-        this.setupFog();
+        //this.setupFog();
 
 
         this.raycaster = new THREE.Raycaster();
@@ -73,8 +83,14 @@ export class SceneManager {
         brickTexture.wrapS = THREE.RepeatWrapping;
         brickTexture.wrapT = THREE.RepeatWrapping;
         brickTexture.repeat.set(6, 2);
-        document.body.appendChild(this.renderer.domElement)
+        document.body.appendChild(this.renderer.domElement);
+        window.addEventListener('resize', this.onWindowResize, false);
+    }
 
+    onWindowResize = () => {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
     private addArea = (sizeX: number, sizeY: number,

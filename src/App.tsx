@@ -2,7 +2,6 @@ import React from 'react';
 import './App.css';
 import * as THREE from 'three';
 import { GameManager } from './GameManager'
-import { globals } from './utils';
 import { Inventory } from './ui/Inventory'
 
 interface AppState {
@@ -14,7 +13,6 @@ class App extends React.Component<{}, AppState> {
   width: number = window.innerWidth;
   gameManager: GameManager | null = null;
 
-  //public scene: THREE.Scene;
   public renderer: THREE.WebGLRenderer;
   public camera: THREE.PerspectiveCamera;
 
@@ -46,7 +44,6 @@ class App extends React.Component<{}, AppState> {
     return <div>
       {this.state.isUiOpened && <Inventory setUiOpen={this.setOpenUi} />}
     </div>
-    //return <canvas id='c'></canvas>
   }
 
 }

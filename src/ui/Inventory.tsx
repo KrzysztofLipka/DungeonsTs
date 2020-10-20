@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { globals } from '../utils';
 import { setRemoveHelmet, switchWeapon, setRemoveArmor } from '../Concepts'
 

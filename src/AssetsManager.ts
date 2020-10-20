@@ -91,23 +91,17 @@ export class AssetsManager {
 
     private addAssets = () => {
         this.assets.push(
-            this.addGameModel('Wall', 'stonewall.glb'),
-            this.addGameModel('Stone1', 'stone1.glb'),
-            this.addGameModel('Stone2', 'stone2.glb'),
-            this.addGameModel('WallAsset', 'wallasset.glb'),
+            //this.addGameModel('Wall', 'stonewall.glb'),
+            //this.addGameModel('Stone1', 'stone1.glb'),
+            //this.addGameModel('Stone2', 'stone2.glb'),
+            //this.addGameModel('WallAsset', 'wallasset.glb'),
             //this.addGameModel('Bricks', 'brick.glb')
         )
 
     }
 
     private addAssetsGroups = () => {
-        this.assetsGroups.push(this.addGameModelWithMultupleMeshes('fence', ['Brick1', 'Brick2'], 'fences.glb'));
-        this.assetsGroups.push(this.addGameModelWithMultupleMeshes('walls',
-            ['Doors', 'StonePillar',
-                'StoneWall', 'Stonewall2',
-                'Floor', 'StoneFloor',
-                'Chest', 'WoodFloor', 'BridgeTop', 'BridgeBottom'],
-            'wall2.4.glb'))
+        this.assetsGroups.push(this.addGameModelWithMultupleMeshes('pixel_assets', ['Floor', 'Walls', 'Chest'], 'pixel_assets.glb'));
 
     }
 
@@ -199,9 +193,8 @@ export class AssetsManager {
 
     private addModels = () => {
         this.models.push(
-            this.addGameModel('Cow', 'https://threejsfundamentals.org/threejs/resources/models/animals/Cow.gltf'),
-            this.addGameModel('Goblin', 'Goblin2.glb'),
-            this.addGameModel('Knight', '/ne6.glb')
+            this.addGameModel('TestEnemy', 'Npc_Enemy.glb'),
+            this.addGameModel('Knight', '/Player.glb')
         )
     }
 
@@ -211,38 +204,26 @@ export class AssetsManager {
         });
     }
 
+    private setupEquipmentElements = (model: IGameModel) => {
+        const helmet = model.gltf.scene.children[0].children.filter(child => child.name === 'Helmet')[0]
+        helmet.visible = false;
+
+        const pickaxe = model.gltf.scene.children[0].children.filter(child => child.name === 'Pickaxe')[0]
+        pickaxe.visible = false;
+
+        const armor = model.gltf.scene.children[0].children.filter(child => child.name === 'Armor')[0]
+        armor.visible = false;
+    }
+
     private loadAnimations = () => {
         this.models.forEach(model => {
             if (model?.gltf?.animations) {
 
+                //todo prepare better elements initializer
                 if (model.name === 'Knight') {
-                    const player = model.gltf.scene.children[0].children.filter(child => child.name === 'Player')[0] as THREE.Mesh;
-
-                    if (player.material instanceof THREE.MeshStandardMaterial) {
-                        player.material.flatShading = false;
-                        player.material.opacity = 1000;
-                        player.material.roughness = 1000;
-                        player.material.polygonOffset = true;
-                        //player.material.metalness = 0.8;
-                        player.material.skinning = true;
-                        player.castShadow = true;
-                        player.material.vertexTangents = true;
-
-                    }
-
-                    const helmet = model.gltf.scene.children[0].children.filter(child => child.name === 'Helmet')[0]
-                    helmet.visible = false;
-
-                    const pickaxe = model.gltf.scene.children[0].children.filter(child => child.name === 'Pickaxe')[0]
-                    pickaxe.visible = false;
-
-                    const armor = model.gltf.scene.children[0].children.filter(child => child.name === 'Armor')[0]
-                    armor.visible = false;
+                    this.setupEquipmentElements(model);
                 }
 
-                if (model.name === 'Goblin') {
-                    model.gltf.userData = { test: 'ffff' }
-                }
                 const animsByName = new Map();
                 model.gltf.animations.forEach(
                     (clip) => {
@@ -332,41 +313,18 @@ export class AssetsManager {
     public init = () => {
         this.loadAnimations();
         this.loadSounds();
-        //this.addAssetsToScene();
-
-        /////////////////////////////////////////////////////
-        this.getAssetFromGroup('fence');
-        this.getAssetFromGroup('walls');
-
-        this.addObject3dToScene('Floor', { posX: 0, posY: 0, posZ: 0 }, Math.PI, 'walkable');
-
-        this.addObject3dToScene('StoneFloor', { posX: 65, posY: -5, posZ: 0 }, Math.PI, 'walkable');
-
-        this.addObject3dToScene('WoodFloor', { posX: 48, posY: -1, posZ: 0 }, Math.PI, 'walkable');
-
-        this.addObject3dToScene('Chest', { posX: 0, posY: 2, posZ: 10 }, Math.PI, 'chest');
-
-        this.addObject3dToScene('BridgeTop', { posX: 27, posY: -3, posZ: 0 }, Math.PI / 2, 'walkable');
-
-        this.addObject3dToScene('BridgeBottom', { posX: 27, posY: -3, posZ: 1 }, Math.PI / 2);
+        this.getAssetFromGroup('pixel_assets');
+        this.addObject3dToScene('Chest', { posX: 20, posY: 2, posZ: 25 }, Math.PI / 2, 'chest');
+        this.addObject3dToScene('Floor', { posX: 27, posY: 0, posZ: 0 }, Math.PI / 2, 'walkable');
+        this.addObject3dToScene('Walls', { posX: 27, posY: 0, posZ: 0 }, Math.PI / 2, 'walkable');
 
 
-
+        //todo move to separated entity
         const gameObject = this.gameObjectManager.createGameObject(this.scene, 'player');
         gameObject.addComponent(Player, this.getGameModel('Knight'));
         globals.player = gameObject;
-
-        //this.npcManager.addEnemy(1, 1);
-
-        //this.AddGoblin(60, 7);
         this.setupNpc();
 
-        //this.AddGoblin(60, 8);
-        //this.AddGoblin(70, 3);
-        //this.AddGoblin(120, 3);
-        //this.AddGoblin(160, 3);
-        //this.AddGoblin(155, -10);
-        //this.AddGoblin(150, -10);
 
     }
 

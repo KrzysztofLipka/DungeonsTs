@@ -26,11 +26,12 @@ export class Enemy extends Component {
         this.skinInstance.mixer.timeScale = globals.moveSpeed / 4;
         const playerTransform = globals.player?.transform;
         //Todo refractor
-        const transform = gameObject?.transform;
+        //const transform = gameObject?.transform;
         this.transform = gameObject?.transform;
 
         let updateOffset = 0;
 
+        //todo refractor and split animation and ai
         this.fsm = new FiniteStateMachine({
             idle: {
                 enter: () => {
@@ -38,23 +39,23 @@ export class Enemy extends Component {
                 },
                 update: () => {
                     // check if player is near
-                    if (isClose(transform, this.followRadius, playerTransform, globals.playerRadius)) {
+                    if (isClose(this.transform, this.followRadius, playerTransform, globals.playerRadius)) {
                         this.fsm.transition('followPlayer');
                     }
                 },
             },
             followPlayer: {
                 enter: () => {
-                    this.skinInstance.setAnimation('Run'); transform.lookAt(playerTransform.position);
+                    this.skinInstance.setAnimation('Run'); this.transform.lookAt(playerTransform.position);
                 },
                 update: () => {
                     updateOffset += 1;
 
                     if (updateOffset === 1) {
-                        transform.lookAt(playerTransform.position);
-                        transform.translateOnAxis(this.kForward, 6 * globals.deltaTime);
+                        this.transform.lookAt(playerTransform.position);
+                        this.transform.translateOnAxis(this.kForward, 6 * globals.deltaTime);
 
-                        if (isClose(transform, this.hitRadius, playerTransform, globals.playerRadius)) {
+                        if (isClose(this.transform, this.hitRadius, playerTransform, globals.playerRadius)) {
                             this.fsm.transition('attack');
                             updateOffset = 0;
                         }
@@ -69,8 +70,8 @@ export class Enemy extends Component {
                 }, update: () => {
                     updateOffset += 1;
                     if (updateOffset === 200) {
-                        if (isClose(transform, this.hitRadius, playerTransform, globals.playerRadius)) {
-                            transform.lookAt(playerTransform.position);
+                        if (isClose(this.transform, this.hitRadius, playerTransform, globals.playerRadius)) {
+                            this.transform.lookAt(playerTransform.position);
                         } else {
                             this.fsm.transition('followPlayer');
                         }
@@ -93,9 +94,5 @@ export class Enemy extends Component {
             this.fsm.update();
         }
 
-        if (globals.playerHitNeedsCalculate && globals.positionOfLastClick.distanceTo(this.transform.position) <= 3) {
-            this.numberOfLives -= 1;
-            console.log(this.skinInstance.gameObject.name + 'Mob has' + this.numberOfLives + 'lives')
-        }
     }
 }

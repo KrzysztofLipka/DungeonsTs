@@ -17,12 +17,10 @@ export class SkinInstance extends Component {
         this.model = model;
         if (model?.gltf?.scene) {
             this.animRoot = SkeletonUtils.clone(model.gltf.scene) as THREE.Object3D;
-            this.animRoot.userData = { test: 'hhhhh' };
         }
 
         this.mixer = new THREE.AnimationMixer(this.animRoot);
         gameObject.transform.add(this.animRoot);
-        gameObject.transform.userData = { test: 'fffff' }
         this.actions = new Map();
         this.loadActions();
     }
@@ -44,8 +42,6 @@ export class SkinInstance extends Component {
     setAnimation = (animName, playonce?: boolean) => {
 
         if (this.actions.get(animName)) {
-            //const clip: THREE.AnimationClip = this.model.animations.get(animName);
-            // turn off all current actions
             this.actions.forEach((action) => {
                 action.enabled = false;
             })
@@ -58,21 +54,21 @@ export class SkinInstance extends Component {
 
             // todo setup in blender
             if (animName === 'Attack2' || animName === 'Attack1') {
-                act.setEffectiveTimeScale(6)
+                act.setEffectiveTimeScale(1)
             }
 
-            if ((animName === 'Run') && this.model.name === 'Goblin') {
+            if ((animName === 'Run') && this.model.name === 'TestEnemy') {
 
                 act.setEffectiveTimeScale(0.5)
             }
 
-            if ((animName === 'Run') && this.model.name !== 'Goblin') {
+            if ((animName === 'Run') && this.model.name !== 'TestEnemy') {
 
                 act.setEffectiveTimeScale(1.4)
             }
 
 
-            if ((animName === 'Attack') && this.model.name === 'Goblin') {
+            if ((animName === 'Attack') && this.model.name === 'TestEnemy') {
 
                 act.setEffectiveTimeScale(0.4)
             }

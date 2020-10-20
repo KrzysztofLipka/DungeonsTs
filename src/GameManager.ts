@@ -15,8 +15,6 @@ export class GameManager {
 
     constructor(innerWidth: number, innerHeight: number, setOpenUi: (open: boolean) => void) {
         this.gameObjectsManager = new GameObjectManager();
-
-
         this.sceneManager = new SceneManager(innerWidth, innerHeight);
         this.assetsManager = new AssetsManager(this.sceneManager.scene, this.sceneManager, this.gameObjectsManager, this.inputManager, this.npcManager, () => this.npcManager.addEnemies());
         this.inputManager = new InputManager(this.sceneManager, this.assetsManager, setOpenUi);

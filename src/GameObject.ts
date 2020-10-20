@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-import { removeArrayElement, SafeArray } from './utils';
-import { globals } from './utils'
+import { removeArrayElement } from './utils';
 import { SkinInstance } from './components/SkinInstance';
 import { Component, IComponent } from './components/Component';
 
@@ -19,17 +18,15 @@ export class GameObject implements IGameObject {
         this.name = name;
         this.components = [];
         this.transform = new THREE.Object3D();
-        console.log(this.transform);
         this.parent = parent;
         if (name === 'player') {
             this.transform.name = 'player';
 
         }
 
-        if (name === 'Goblin') {
-            this.transform.name = 'goblin';
+        if (name === 'TestEnemy') {
+            this.transform.name = 'Enemy';
         }
-        console.log(this.transform);
 
         parent.add(this.transform);
 
@@ -66,7 +63,7 @@ export class GameObjectManager {
 
     update() {
         this.gameObjects.forEach(gameObject => gameObject.update());
-        globals.playerHitNeedsCalculate = false;
+        //globals.playerHitNeedsCalculate = false;
     }
     get gameObjectsArray() {
         return this.gameObjects

@@ -1,5 +1,6 @@
 import { globals } from './utils';
 
+//this module contains prototypes
 export const setRemoveHelmet = (remove: boolean) => {
     const helmet = globals.player.transform.children[0].children[0].children.filter(child => child.name === 'Helmet')[0];
     helmet.visible = !remove;

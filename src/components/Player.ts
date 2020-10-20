@@ -27,16 +27,14 @@ export class Player extends Component {
         this.playerLight = new THREE.DirectionalLight(0x629696, 5)
         this.playerLight.position.set(0, 5, 0);
 
-
-
         this.gameObject.parent.add(this.playerLight);
 
+        //todo refractor
         this.fsm = new FiniteStateMachine({
             idle: {
                 enter: () => { this.skinInstance.setAnimation('Idle'); },
                 update: () => {
                     if (!globals.playerIsIdle) {
-
                         this.fsm.transition('run');
                     }
                 }
@@ -51,6 +49,7 @@ export class Player extends Component {
                     if (globals.playerIsIdle) {
                         this.fsm.transition('idle');
                         globals.sounds[0].pause();
+                        return;
                     }
 
                     const playerPosition = this.transform.position;
@@ -59,13 +58,13 @@ export class Player extends Component {
                         this.fsm.transition('attack')
                     }
 
-                    if ((globals.positionOfLastClick.distanceTo(playerPosition) > 0.5 || /*globals.isMouseHold*/ globals.leftMouseButton.state === ButtonState.Hold) && !globals.playerIsIdle) {
+                    if ((globals.positionOfLastClick.distanceTo(playerPosition) > 0.5 || globals.leftMouseButton.state === ButtonState.Hold)) {
                         this.transform.translateOnAxis(this.kForward, 16 * globals.deltaTime);
                     } else {
                         globals.playerIsIdle = true;
                     }
 
-                    if (/*globals.isMouseHold*/  globals.leftMouseButton.state === ButtonState.Hold) {
+                    if (globals.leftMouseButton.state === ButtonState.Hold) {
                         this.transform.lookAt(globals.positionOfLastClick.x, 0, globals.positionOfLastClick.z);
                     }
 
@@ -79,27 +78,24 @@ export class Player extends Component {
                     if (globals.lastAttackAnimatianWas2) {
                         this.skinInstance.setAnimation('Attack1', true)
                         globals.lastAttackAnimatianWas2 = false;
+
                     } else {
                         this.skinInstance.setAnimation('Attack2', true)
                         globals.lastAttackAnimatianWas2 = true;
-                    }; /*globals.playerComboLevel = 1;*/ globals.attackTime = 0
+                    }; globals.attackTime = 0
                 },
                 update: () => {
                     globals.attackTime += 1;
-                    if (globals.attackTime === 40) {
+                    if (globals.attackTime >= 40) {
 
                         globals.playerNeedsToHit = false;
                         globals.sounds[1].play();
-
-                        //attackTime = 0;
-                        this.fsm.transition('idle')
+                        this.fsm.transition('idle');
                     }
                 }
 
             },
         }, 'idle')
-
-
     }
 
     update = () => {
@@ -113,9 +109,6 @@ export class Player extends Component {
             this.transform.position.x,
             5,
             this.transform.position.z);
-
-
-
         let delta = new THREE.Vector3();
         delta.subVectors(lightTarget, this.playerLight.position);
         this.playerLight.position.addVectors(this.playerLight.position, delta);

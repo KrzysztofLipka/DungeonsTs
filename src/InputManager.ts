@@ -38,7 +38,6 @@ export class HoldableButton extends Button {
     update(): void {
 
         if (this.state === ButtonState.Down) {
-            console.log('down');
             this.incrementButtonHoldTime();
         }
 
@@ -69,14 +68,14 @@ export class InputManager {
         this.assetsManager = assetsManager;
 
         window.addEventListener('mousedown', e => {
-
+            globals.playerHitNeedsCalculate = true;
             if (globals.isInventoryMode) {
                 return;
             }
 
             globals.leftMouseButton.state = ButtonState.Down;
 
-            let shouldMove = this.calculate(e, true);
+            let shouldMove = this.calculate(e);
             if (shouldMove) {
                 globals.playerIsIdle = false;
                 globals.player.transform.lookAt(globals.positionOfLastClick);
@@ -108,7 +107,7 @@ export class InputManager {
     }
 
     //todo refractor and use mousehold for moving
-    public calculate = (e, updateArea: boolean = false) => {
+    public calculate = (e) => {
         const clickTarget = this.calculatePositionFromClick(
             e.clientX, e.clientY,
             this.mouse, this.sceneManager.raycaster,
@@ -117,19 +116,13 @@ export class InputManager {
             return false;
         }
         globals.setPositonOfLastClickVector(clickTarget);
-
-        if (updateArea && this.calculateIfElementOfSceneInClickArea(clickTarget, 5)) {
-            globals.playerHitNeedsCalculate = true;
-            globals.playerNeedsToHit = true;
-        }
-
         return !!clickTarget;
     }
 
     calculateIfElementOfSceneInClickArea(clickVector: THREE.Vector3, area: number): boolean {
         let i: number;
         for (i = 0; i < this.sceneManager.scene.children.length; i++) {
-            if (this.sceneManager.scene.children[i].name === 'goblin'
+            if (this.sceneManager.scene.children[i].name === 'TestEnemy'
                 && this.sceneManager.scene.children[i].position.distanceTo(clickVector) < area) {
                 return true;
             }
