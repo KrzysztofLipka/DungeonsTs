@@ -6,7 +6,6 @@ import { SceneManager } from './SceneManager';
 import { globals } from './utils'
 
 export class NpcManager extends GameObjectManager {
-    //gameObjects: Enemy[];
     sceneManager: SceneManager;
     assetManager: AssetsManager;
 
@@ -25,8 +24,9 @@ export class NpcManager extends GameObjectManager {
 
     addEnemies = () => {
         //todo prepare enemy factory
-        this.addEnemy(2, 2);
-        this.addEnemy(3, 3);
+        this.addEnemy(40, -20);
+        this.addEnemy(40, 20);
+        this.addEnemy(10, 25);
     }
 
     update() {
