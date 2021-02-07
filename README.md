@@ -12,12 +12,12 @@ Click with left mouse button on element to move, open chest or attack or hold le
 
 
 ## Todo
--Implement Entity Component System with Typescript or use ECSY:
+* Implement Entity Component System with Typescript or use ECSY:
  [ECSY](https://ecsy.io/).
- -Ai System
- -Better Visuals
- -Level generation
- -Animations & VFX
+* Ai System
+* Better Visuals
+* Level generation
+* Animations & VFX
  
  
  
