@@ -8,6 +8,7 @@ export interface IGameObject {
     update(): void;
 }
 
+//Todo Implement better ECS
 export class GameObject implements IGameObject {
     name: string;
     components: Component[];

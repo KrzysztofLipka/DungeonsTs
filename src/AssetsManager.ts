@@ -95,7 +95,7 @@ export class AssetsManager {
     private addAssets = () => {
         this.assets.push(
             //this.addGameModel('Wall', 'stonewall.glb'),
-            this.addGameModel('Stone1', 'stone1.glb'),
+            this.addGameModel('Barell1', 'barells.glb'),
             //this.addGameModel('Stone2', 'stone2.glb'),
             //this.addGameModel('WallAsset', 'wallasset.glb'),
             //this.addGameModel('Bricks', 'brick.glb')
@@ -104,7 +104,8 @@ export class AssetsManager {
     }
 
     private addAssetsGroups = () => {
-        this.assetsGroups.push(this.addGameModelWithMultupleMeshes('pixel_assets', ['Ground1', 'Ground1_Walkable', 'Ground2', 'Ground2_Walkable', 'Bridge', 'Bridge_Walkable', 'Chest', 'Terrain1', 'Pillar'], 'pixel_assets2.glb'));
+        this.assetsGroups.push(this.addGameModelWithMultupleMeshes('pixel_assets', ['Ground1', 'Ground1_Walkable', 'Ground2', 'Ground2_Walkable', 'Bridge', 'Bridge_Walkable', 'Terrain1', 'Pillar'], 'pixel_assets2.glb'));
+        this.assetsGroups.push(this.addGameModelWithMultupleMeshes('containers', ['Chest1'], 'containers.glb'));
 
     }
 
@@ -321,7 +322,8 @@ export class AssetsManager {
         this.loadAnimations();
         this.loadSounds();
         this.getAssetFromGroup('pixel_assets');
-        this.addObject3dToScene('Chest', { posX: 20, posY: 2, posZ: 25 }, Math.PI / 2, 'chest');
+        this.getAssetFromGroup('containers');
+        this.addObject3dToScene('Chest1', { posX: 40, posY: 2, posZ: 0 }, Math.PI / -2, 'chest');
         //this.addObject3dToScene('Pillar', { posX: 20, posY: 2, posZ: 0 }, Math.PI / 2);
         this.addObject3dToScene('Ground1_Walkable', { posX: 27, posY: 0, posZ: 0 }, Math.PI / 2, 'walkable');
         this.addObject3dToScene('Ground1', { posX: 27, posY: 0, posZ: 0 }, Math.PI / 2);

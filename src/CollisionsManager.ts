@@ -24,11 +24,13 @@ export class CollisionsManager extends GameObjectManager {
         const player = globals.player.getComponent(Player) as Player;
         this.playerColliderBox = player.playerHitBox;
         this.addTestCollidableObject(0.5, 0.5, 20, 10);
+        this.addTestCollidableObject(0.5, 0.5, 20, -10);
+        this.addTestCollidableObject(0.5, 0.5, 20, 0);
     }
 
     addTestCollidableObject = (sizeX: number, sizeZ: number, posX: number, posZ: number) => {
-        const gameObject = this.createGameObject(this.sceneManager.scene, 'Stone1');
-        gameObject.addComponent(Obstacle, this.assetManager.getGameAsset('Stone1'), sizeX, sizeZ, posX, posZ);
+        const gameObject = this.createGameObject(this.sceneManager.scene, 'Barell1');
+        gameObject.addComponent(Obstacle, this.assetManager.getGameAsset('Barell1'), sizeX, sizeZ, posX, posZ);
 
         gameObject.transform.position.x = posX;
         gameObject.transform.position.z = posZ;

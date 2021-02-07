@@ -24,9 +24,9 @@ export class NpcManager extends GameObjectManager {
 
     addEnemies = () => {
         //todo prepare enemy factory
-        this.addEnemy(40, -20);
-        this.addEnemy(40, 20);
-        this.addEnemy(10, 25);
+        this.addEnemy(-50, -10);
+        this.addEnemy(-50, 10);
+        this.addEnemy(-60, -15);
     }
 
     update() {

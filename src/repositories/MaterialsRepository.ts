@@ -25,7 +25,6 @@ export class MaterialsRepository {
     //todo make generic for other types of materials
     private addPhongMaterial = (title: string, textureTitle: string) => {
         this.materials.set(title, new THREE.MeshPhongMaterial({ map: this.getTexture(textureTitle), side: THREE.DoubleSide }))
-
     }
 
     initTextures = () => {
