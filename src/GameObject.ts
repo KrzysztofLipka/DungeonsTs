@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { removeArrayElement } from './utils';
-import { SkinInstance } from './components/SkinInstance';
+import { SkinInstance, AnimatedSkinInstance } from './components/SkinInstance';
 import { Component, IComponent } from './components/Component';
 
 export interface IGameObject {
@@ -27,7 +27,6 @@ export class GameObject implements IGameObject {
         if (name === 'TestEnemy') {
             this.transform.name = 'Enemy';
         }
-
         parent.add(this.transform);
 
     }
@@ -70,7 +69,7 @@ export class GameObjectManager {
     }
 
     getSkinInstance(obj: any) {
-        return obj.components.find(obj => obj instanceof SkinInstance)
+        return obj.components.find(obj => obj instanceof AnimatedSkinInstance)
     }
 }
 

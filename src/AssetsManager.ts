@@ -56,6 +56,8 @@ export class AssetsManager {
     gameObjectManager: GameObjectManager;
     npcManager: NpcManager;
     setupNpc: () => void;
+    setupObstacles: () => void;
+    playerComponent: any;
 
     public audioLoader: THREE.AudioLoader;
     public sound: THREE.Audio;
@@ -63,7 +65,7 @@ export class AssetsManager {
     listener: THREE.AudioListener;
 
 
-    constructor(scene: THREE.Scene, sceneManager: SceneManager, gameObjectManager: GameObjectManager, inputManager: InputManager, npcManager: NpcManager, setupNpc: () => void) {
+    constructor(scene: THREE.Scene, sceneManager: SceneManager, gameObjectManager: GameObjectManager, inputManager: InputManager, npcManager: NpcManager, setupNpc: () => void, setupObstacles: () => void) {
         this.manager = new THREE.LoadingManager();
         this.manager.onLoad = this.init;
         this.gltfLoader = new GLTFLoader(this.manager);
@@ -76,6 +78,7 @@ export class AssetsManager {
         this.addAssetsGroups();
         this.loadAssetsGroups();
         this.setupNpc = setupNpc;
+        this.setupObstacles = setupObstacles;
 
 
         this.gameObjectManager = gameObjectManager;
@@ -92,7 +95,7 @@ export class AssetsManager {
     private addAssets = () => {
         this.assets.push(
             //this.addGameModel('Wall', 'stonewall.glb'),
-            //this.addGameModel('Stone1', 'stone1.glb'),
+            this.addGameModel('Stone1', 'stone1.glb'),
             //this.addGameModel('Stone2', 'stone2.glb'),
             //this.addGameModel('WallAsset', 'wallasset.glb'),
             //this.addGameModel('Bricks', 'brick.glb')
@@ -101,7 +104,7 @@ export class AssetsManager {
     }
 
     private addAssetsGroups = () => {
-        this.assetsGroups.push(this.addGameModelWithMultupleMeshes('pixel_assets', ['Floor', 'Walls', 'Chest'], 'pixel_assets.glb'));
+        this.assetsGroups.push(this.addGameModelWithMultupleMeshes('pixel_assets', ['Ground1', 'Ground1_Walkable', 'Ground2', 'Ground2_Walkable', 'Bridge', 'Bridge_Walkable', 'Chest', 'Terrain1', 'Pillar'], 'pixel_assets2.glb'));
 
     }
 
@@ -278,6 +281,10 @@ export class AssetsManager {
     public getGameModel = (name: string): IGameModel => {
         return this.models.find(model => model.name === name)
     }
+    public getGameAsset = (name: string): IGameModel => {
+        const asset = this.assets.find(model => model.name === name);
+        return asset;
+    }
 
     public AddGoblin = (posX: number, posZ: number) => {
         const gameObject = this.gameObjectManager.createGameObject(this.scene, 'Goblin');
@@ -315,16 +322,34 @@ export class AssetsManager {
         this.loadSounds();
         this.getAssetFromGroup('pixel_assets');
         this.addObject3dToScene('Chest', { posX: 20, posY: 2, posZ: 25 }, Math.PI / 2, 'chest');
-        this.addObject3dToScene('Floor', { posX: 27, posY: 0, posZ: 0 }, Math.PI / 2, 'walkable');
-        this.addObject3dToScene('Walls', { posX: 27, posY: 0, posZ: 0 }, Math.PI / 2, 'walkable');
+        //this.addObject3dToScene('Pillar', { posX: 20, posY: 2, posZ: 0 }, Math.PI / 2);
+        this.addObject3dToScene('Ground1_Walkable', { posX: 27, posY: 0, posZ: 0 }, Math.PI / 2, 'walkable');
+        this.addObject3dToScene('Ground1', { posX: 27, posY: 0, posZ: 0 }, Math.PI / 2);
+        this.addObject3dToScene('Terrain1', { posX: 27, posY: 0, posZ: 0 }, Math.PI / 2);
+
+        this.addObject3dToScene('Ground2_Walkable', { posX: -100, posY: 0, posZ: 0 }, Math.PI / 2, 'walkable');
+        this.addObject3dToScene('Ground2', { posX: -100, posY: 0, posZ: 0 }, Math.PI / 2);
+
+        this.addObject3dToScene('Bridge_Walkable', { posX: 27, posY: 0, posZ: 0 }, Math.PI / 2, 'walkable');
+        this.addObject3dToScene('Bridge', { posX: 27, posY: 0, posZ: 0 }, Math.PI / 2);
+        //this.addObject3dToScene('Walls', { posX: 0, posY: 0, posZ: 0 }, Math.PI / 2, 'walkable');
+        this.initPlayer();
+        this.setupNpc();
+        this.setupObstacles();
+        //this.addAssetsToScene();
 
 
+
+
+
+
+    }
+
+    public initPlayer = () => {
         //todo move to separated entity
         const gameObject = this.gameObjectManager.createGameObject(this.scene, 'player');
         gameObject.addComponent(Player, this.getGameModel('Knight'));
         globals.player = gameObject;
-        this.setupNpc();
-
 
     }
 

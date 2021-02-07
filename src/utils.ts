@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GameObject } from './GameObject';
+import { Player } from './components/Player'
 import { HoldableButton } from './InputManager';
 
 export const removeArrayElement = (array: any[], element: number) => {
@@ -31,6 +32,8 @@ class Globals {
     playerHitNeedsCalculate = false;
     playerNeedsToHit = false;
     playerIsIdle: boolean = true;
+    playerHasCollison: boolean = false;
+    playerCollisionNeedUpdate: boolean = false;
 
     attackTime: number = 0;
     lastAttackAnimatianWas2: boolean = true;
@@ -41,9 +44,15 @@ class Globals {
 
     sounds: THREE.Audio[] = [];
 
+    getPlayerVectorHitbox = () => {
+        return (this.player.getComponent(Player) as Player).playerHitVector;
+    }
+
 }
 
 export const globals = new Globals();
+
+export const cameraPosition: THREE.Vector3 = new THREE.Vector3(-60, 80, -60);
 
 export class FiniteStateMachine {
     states: any[];
@@ -76,6 +85,6 @@ export class FiniteStateMachine {
 
 export function isClose(obj1, obj1Radius, obj2, obj2Radius) {
     const minDist = obj1Radius + obj2Radius;
-    const dist = obj1.position.distanceTo(obj2.position);
+    const dist = obj1?.position?.distanceTo(obj2?.position);
     return dist < minDist;
 }

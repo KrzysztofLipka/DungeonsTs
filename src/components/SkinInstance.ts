@@ -6,11 +6,12 @@ import * as THREE from 'three';
 import { globals } from '../utils';
 
 
+
+
 export class SkinInstance extends Component {
     model: IGameModel;
     animRoot: THREE.Object3D;
-    mixer: any;
-    actions: Map<any, any>;
+
 
     constructor(gameObject: GameObject, model: IGameModel) {
         super(gameObject);
@@ -18,13 +19,23 @@ export class SkinInstance extends Component {
         if (model?.gltf?.scene) {
             this.animRoot = SkeletonUtils.clone(model.gltf.scene) as THREE.Object3D;
         }
+        gameObject.transform.add(this.animRoot);
+    }
+}
+
+export class AnimatedSkinInstance extends SkinInstance {
+
+    mixer: any;
+    actions: Map<any, any>;
+    constructor(gameObject: GameObject, model: IGameModel) {
+        super(gameObject, model);
 
         this.mixer = new THREE.AnimationMixer(this.animRoot);
-        gameObject.transform.add(this.animRoot);
+
         this.actions = new Map();
         this.loadActions();
-    }
 
+    }
     loadActions = () => {
 
         this.model.animations.forEach(clip => {

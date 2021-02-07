@@ -3,7 +3,7 @@ import { FiniteStateMachine, isClose } from '../utils';
 import { IGameModel } from '../AssetsManager';
 import { globals } from '../utils'
 import { Component } from './Component';
-import { SkinInstance } from './SkinInstance';
+import { SkinInstance, AnimatedSkinInstance } from './SkinInstance';
 import { GameObject } from '../GameObject';
 
 export class Enemy extends Component {
@@ -11,7 +11,7 @@ export class Enemy extends Component {
     followRadius: number = 20;
     hitRadius: number = 1;
     fsm: FiniteStateMachine;
-    skinInstance: SkinInstance;
+    skinInstance: AnimatedSkinInstance;
     maxTurnSpeed = Math.PI * (globals.moveSpeed / 4);
     transform: THREE.Object3D;
     kForward = new THREE.Vector3(0, 0, 1);
@@ -22,7 +22,7 @@ export class Enemy extends Component {
     constructor(gameObject: GameObject, model: IGameModel) {
         super(gameObject);
         this.numberOfLives = 5;
-        this.skinInstance = gameObject.addComponent(SkinInstance, model);
+        this.skinInstance = gameObject.addComponent(AnimatedSkinInstance, model);
         this.skinInstance.mixer.timeScale = globals.moveSpeed / 4;
         const playerTransform = globals.player?.transform;
         //Todo refractor
@@ -39,6 +39,10 @@ export class Enemy extends Component {
                 },
                 update: () => {
                     // check if player is near
+                    if (!playerTransform) {
+                        return;
+                    }
+
                     if (isClose(this.transform, this.followRadius, playerTransform, globals.playerRadius)) {
                         this.fsm.transition('followPlayer');
                     }
