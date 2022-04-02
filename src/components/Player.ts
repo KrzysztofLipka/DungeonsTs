@@ -76,22 +76,16 @@ export class Player extends Component {
                             this.transform.translateOnAxis(this.kForward, 16 * globals.deltaTime);
                             globals.playerHasCollison = false;
                         } else {
-                            //globals.playerHasCollison = false;
                             let delta = new THREE.Vector3();
                             delta.subVectors(this.previousPosition, this.transform.position);
                             this.transform.position.addVectors(this.transform.position, delta);
-                            console.log('ccc');
-                            //this.fsm.transition('idle');
                             globals.playerIsIdle = true;
                             globals.playerHasCollison = false;
                             globals.playerCollisionNeedUpdate = false;
-
-
                         }
 
                     } else {
                         globals.playerIsIdle = true;
-                        //globals.playerHasCollison = false;
                     }
 
                     if (globals.leftMouseButton.state === ButtonState.Hold) {
